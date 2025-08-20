@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Container, Row, Col } from 'react-bootstrap';
 import PantryBuilder from '../components/PantryBuilder';
 import RecipeList from '../components/RecipeList';
+import FilterBar from '../components/FilterBar';
 
 // In a real app, this data would come from your backend API or be managed in a Redux slice.
 const mockRecipes = [
@@ -17,7 +18,7 @@ const mockRecipes = [
       { name: 'rice', quantity: 1, unit: 'cup' },
       { name: 'onion', quantity: 1, unit: 'pc' },
     ],
-    dietaryTags: ['High-Protein'],
+    dietaryTags: ['High-Protein', 'Non-Veg'],
   },
   {
     _id: '2',
@@ -30,7 +31,7 @@ const mockRecipes = [
       { name: 'garlic', quantity: 4, unit: 'cloves' },
       { name: 'butter', quantity: 4, unit: 'tbsp' },
     ],
-    dietaryTags: [],
+    dietaryTags: ['Non-Veg'],
   },
   {
     _id: '3',
@@ -44,7 +45,7 @@ const mockRecipes = [
       { name: 'vegetable broth', quantity: 6, unit: 'cups' },
       { name: 'onion', quantity: 1, unit: 'pc' },
     ],
-    dietaryTags: ['Vegan', 'Gluten-Free'],
+    dietaryTags: ['Vegan', 'Vegetarian', 'Gluten-Free'],
   },
     {
     _id: '4',
@@ -57,13 +58,35 @@ const mockRecipes = [
       { name: 'cheese', quantity: 2, unit: 'cups' },
       { name: 'milk', quantity: 1, unit: 'cup' },
     ],
-    dietaryTags: ['Family-Friendly'],
+    dietaryTags: ['Family-Friendly', 'Non-Veg'],
   },
 ];
+
+const isVegan = (recipe) => {
+  const nonVeganKeywords = ['chicken', 'beef', 'pork', 'fish', 'shrimp', 'egg', 'milk', 'cheese', 'butter', 'ghee', 'honey'];
+  return !recipe.ingredients.some(ing =>
+    nonVeganKeywords.some(keyword => ing.name.toLowerCase().includes(keyword))
+  );
+};
+
+const isVegetarian = (recipe) => {
+  const nonVegKeywords = ['chicken', 'beef', 'pork', 'fish', 'shrimp'];
+  return !recipe.ingredients.some(ing =>
+    nonVegKeywords.some(keyword => ing.name.toLowerCase().includes(keyword))
+  );
+};
+
+const isNonVeg = (recipe) => {
+  const nonVegKeywords = ['chicken', 'beef', 'pork', 'fish', 'shrimp'];
+  return recipe.ingredients.some(ing =>
+    nonVegKeywords.some(keyword => ing.name.toLowerCase().includes(keyword))
+  );
+};
 
 const GeneratorScreen = () => {
   const [pantry, setPantry] = useState(['chicken breast', 'broccoli', 'rice']);
   const [filteredRecipes, setFilteredRecipes] = useState([]);
+  const [activeFilter, setActiveFilter] = useState('All');
 
   const toggleIngredient = (ingredient) => {
     const ingredientLower = ingredient.toLowerCase();
@@ -75,24 +98,28 @@ const GeneratorScreen = () => {
   };
 
   useEffect(() => {
-    if (pantry.length > 0) {
-      const results = mockRecipes
-        .map((recipe) => {
-          const matchCount = pantry.filter((pantryItem) =>
-            recipe.ingredients.some(
-              (recipeIngredient) => recipeIngredient.name.toLowerCase() === pantryItem
-            )
-          ).length;
-          return { ...recipe, matchCount };
-        })
-        .filter((recipe) => recipe.matchCount > 0);
+    let results = mockRecipes
+      .map((recipe) => {
+        const matchCount = pantry.filter((pantryItem) =>
+          recipe.ingredients.some(
+            (recipeIngredient) => recipeIngredient.name.toLowerCase() === pantryItem
+          )
+        ).length;
+        return { ...recipe, matchCount };
+      })
+      .filter((recipe) => recipe.matchCount > 0);
 
-      results.sort((a, b) => b.matchCount - a.matchCount);
-      setFilteredRecipes(results);
-    } else {
-      setFilteredRecipes([]);
+    if (activeFilter === 'Vegan') {
+      results = results.filter(isVegan);
+    } else if (activeFilter === 'Vegetarian') {
+      results = results.filter(isVegetarian);
+    } else if (activeFilter === 'Non-Veg') {
+        results = results.filter(isNonVeg);
     }
-  }, [pantry]);
+
+    results.sort((a, b) => b.matchCount - a.matchCount);
+    setFilteredRecipes(results);
+  }, [pantry, activeFilter]);
 
   return (
     <Container fluid className="my-4">
@@ -101,6 +128,10 @@ const GeneratorScreen = () => {
           <PantryBuilder pantry={pantry} onToggleIngredient={toggleIngredient} />
         </Col>
         <Col md={8}>
+          <FilterBar
+            activeFilter={activeFilter}
+            onSelectFilter={setActiveFilter}
+          />
           <RecipeList recipes={filteredRecipes} pantryCount={pantry.length} />
         </Col>
       </Row>

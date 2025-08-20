@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Form, Accordion, ListGroup } from 'react-bootstrap';
+import PropTypes from 'prop-types';
 
 // Mock Data for the component
 const ingredientCategories = {
@@ -72,6 +73,11 @@ const PantryBuilder = ({ pantry, onToggleIngredient }) => {
       </Accordion>
     </>
   );
+};
+
+PantryBuilder.propTypes = {
+  pantry: PropTypes.array.isRequired,
+  onToggleIngredient: PropTypes.func.isRequired,
 };
 
 export default PantryBuilder;

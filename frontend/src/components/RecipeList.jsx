@@ -1,5 +1,6 @@
 import { Row, Col } from 'react-bootstrap';
 import RecipeCard from './RecipeCard';
+import PropTypes from 'prop-types';
 
 const RecipeList = ({ recipes, pantryCount }) => {
   return (
@@ -24,6 +25,11 @@ const RecipeList = ({ recipes, pantryCount }) => {
       </Row>
     </>
   );
+};
+
+RecipeList.propTypes = {
+  recipes: PropTypes.array.isRequired,
+  pantryCount: PropTypes.number.isRequired,
 };
 
 export default RecipeList;
