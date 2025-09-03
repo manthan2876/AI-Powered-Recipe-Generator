@@ -62,7 +62,107 @@ function App() {
       <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 max-w-7xl">
+        {/* Search Bar with Language Preference */}
+        <div className="mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div className="relative flex-grow max-w-2xl">
+            <input
+              type="text"
+              placeholder="Search for specific recipes..."
+              className="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="relative">
+              <button className="flex items-center space-x-1 text-gray-700 hover:text-primary">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                </svg>
+                <span>English</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              {/* Language dropdown would go here */}
+            </div>
+            <div className="h-6 border-l border-gray-300"></div>
+            <button className="text-gray-700 hover:text-primary">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        
+        {/* Filter options */}
+        <div className="mb-6 flex flex-wrap gap-2">
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Key Ingredients</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Exclude</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Meal type</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Missing one ingredient</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Video only</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Cuisines</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Diet</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Max Ingredients</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Rating</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          <button className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm flex items-center hover:bg-gray-50">
+            <span>Recipe time</span>
+            <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+        
         {/* Tabs */}
         <div className="flex border-b border-gray-200 mb-6">
           <button
@@ -81,12 +181,12 @@ function App() {
 
         {/* Search Section */}
         {activeTab === 'search' && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8"> {/* Adjusted gap for different screens */}
             <RecipeSearch onSearch={handleSearch} />
 
             <div className="lg:col-span-2">
-              <h2 className="text-2xl font-semibold mb-6 text-dark">Suggested Recipes</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <h2 className="text-xl md:text-2xl font-semibold mb-4 md:mb-6 text-dark">Suggested Recipes</h2> {/* Responsive text size */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6"> {/* Added sm breakpoint */}
                 {recipes.map(recipe => (
                   <RecipeCard 
                     key={recipe.id} 
