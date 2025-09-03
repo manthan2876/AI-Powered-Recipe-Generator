@@ -1,12 +1,16 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import AuthModal from '../auth/AuthModal';
+import { useTheme } from '../../contexts/ThemeContext';
+import { useLanguage, languageOptions } from '../../contexts/LanguageContext';
 
 const Header = () => {
+  const { theme, toggleTheme } = useTheme();
+  const { language, changeLanguage } = useLanguage();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [authMode, setAuthMode] = useState('login');
   const [showUserDropdown, setShowUserDropdown] = useState(false);
-  const [theme, setTheme] = useState('light');
   const dropdownRef = useRef(null);
 
   useEffect(() => {
@@ -44,20 +48,26 @@ const Header = () => {
     // Here you would typically call your API to logout
   };
 
-  const toggleTheme = () => {
-    setTheme(theme === 'light' ? 'dark' : 'light');
-    // Here you would implement the actual theme change logic
-  };
-
   return (
     <>
-      <header className="bg-white shadow-md">
+      <header className={`shadow-md ${theme === 'dark' ? 'bg-gray-800 text-white' : 'bg-white text-dark'}`}>
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex items-center">
-            <svg className="w-8 h-8 text-primary mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-            </svg>
-            <h1 className="text-2xl font-bold text-dark">AI Recipe Generator</h1>
+            <Link to="/" className="flex items-center">
+              <svg className="w-8 h-8 text-primary mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+              </svg>
+              <h1 className="text-2xl font-bold">AI Recipe Generator</h1>
+            </Link>
+          </div>
+          
+          <div className="hidden md:flex items-center space-x-6">
+            <Link to="/" className={`${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}>
+              {language === 'en' ? 'Home' : language === 'hi' ? 'होम' : 'હોમ'}
+            </Link>
+            <Link to="/about" className={`${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}>
+              {language === 'en' ? 'About Us' : language === 'hi' ? 'हमारे बारे में' : 'અમારા વિશે'}
+            </Link>
           </div>
           
           {isLoggedIn ? (
@@ -69,32 +79,33 @@ const Header = () => {
                 <div className="w-8 h-8 rounded-full bg-primary text-white flex items-center justify-center">
                   <span className="text-sm font-medium">U</span>
                 </div>
-                <span className="text-dark hidden md:inline">User</span>
+                <span className={`hidden md:inline ${theme === 'dark' ? 'text-white' : 'text-dark'}`}>User</span>
                 <svg className="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
               
               {showUserDropdown && (
-                <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
-                  <a href="#profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 z-10 border ${theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'}`}>
+                  <Link to="/account" className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      Manage Account
+                      {language === 'en' ? 'Manage Account' : language === 'hi' ? 'खाता प्रबंधित करें' : 'એકાઉન્ટ મેનેજ કરો'}
                     </div>
-                  </a>
-                  <a href="#saved" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  </Link>
+                  <Link to="/saved-recipes" className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
                       </svg>
-                      Saved Recipes
+                      {language === 'en' ? 'Saved Recipes' : language === 'hi' ? 'सहेजी गई रेसिपी' : 'સાચવેલી રેસિપી'}
                     </div>
-                  </a>
-                  <div className="border-t border-gray-100 my-1"></div>
-                  <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  </Link>
+                  
+                  <div className={`border-t my-1 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}></div>
+                  <div className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -110,7 +121,7 @@ const Header = () => {
                       </button>
                     </div>
                   </div>
-                  <div className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                  <div className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <div className="flex items-center justify-between">
                       <div className="flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -118,17 +129,21 @@ const Header = () => {
                         </svg>
                         Language
                       </div>
-                      <select className="text-sm bg-transparent border-none focus:outline-none">
-                        <option value="en">English</option>
-                        <option value="es">Español</option>
-                        <option value="fr">Français</option>
+                      <select 
+                        className={`text-sm border-none focus:outline-none ${theme === 'dark' ? 'bg-gray-700 text-white' : 'bg-transparent text-gray-700'}`}
+                        value={language}
+                        onChange={(e) => changeLanguage(e.target.value)}
+                      >
+                        {languageOptions.map(option => (
+                          <option key={option.code} value={option.code}>{option.name}</option>
+                        ))}
                       </select>
                     </div>
                   </div>
-                  <div className="border-t border-gray-100 my-1"></div>
+                  <div className={`border-t my-1 ${theme === 'dark' ? 'border-gray-600' : 'border-gray-100'}`}></div>
                   <button 
                     onClick={handleLogout}
-                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-100"
+                    className={`block w-full text-left px-4 py-2 text-sm text-red-600 ${theme === 'dark' ? 'hover:bg-gray-600' : 'hover:bg-gray-100'}`}
                   >
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -158,7 +173,8 @@ const Header = () => {
           )}
         </div>
       </header>
-
+      
+      {/* Auth Modal */}
       {showAuthModal && (
         <AuthModal 
           isOpen={showAuthModal} 

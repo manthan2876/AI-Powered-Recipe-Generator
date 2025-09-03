@@ -11,6 +11,15 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+body.dark {
+  background-color: #1a202c;
+  color: #f7fafc;
+}
+
+body.light {
   background-color: #F7FFF7;
   color: #292F36;
 }
@@ -30,6 +39,10 @@ code {
   }
   
   .card {
-    @apply bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow;
+    @apply bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow dark:bg-gray-800 dark:shadow-gray-900;
+  }
+
+  .dark .card {
+    @apply bg-gray-800 shadow-gray-900;
   }
 }

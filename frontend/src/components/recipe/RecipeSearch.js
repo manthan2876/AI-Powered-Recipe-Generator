@@ -16,23 +16,38 @@ const RecipeSearch = ({ onSearch }) => {
   const ingredientCategories = [
     {
       name: 'Pantry Essentials',
-      items: ['butter', 'egg', 'garlic', 'milk', 'onion', 'sugar', 'flour', 'olive oil', 'garlic powder', 'white rice', 'cinnamon', 'ketchup', 'soy sauce', 'mayonnaise', 'vegetable oil']
+      items: ['butter', 'egg', 'garlic', 'milk', 'onion', 'sugar', 'flour', 'olive oil', 'garlic powder', 'white rice', 'cinnamon', 'ketchup', 'soy sauce', 'mayonnaise', 'vegetable oil'],
+      nonVegetarian: ['butter', 'egg', 'milk']
     },
     {
       name: 'Vegetables & Greens',
-      items: ['garlic', 'onion', 'bell pepper', 'scallion', 'carrot', 'tomato', 'potato', 'red onion', 'celery', 'avocado', 'zucchini', 'shallot', 'cherry tomato', 'cucumber', 'spinach']
+      items: ['garlic', 'onion', 'bell pepper', 'scallion', 'carrot', 'tomato', 'potato', 'red onion', 'celery', 'avocado', 'zucchini', 'shallot', 'cherry tomato', 'cucumber', 'spinach'],
+      nonVegetarian: []
     },
     {
       name: 'Mushrooms',
-      items: ['button mushroom', 'shiitake mushroom', 'portobello mushroom', 'wild mushroom', 'porcini', 'oyster mushroom', 'mixed mushrooms', 'chestnut mushroom', 'enoki mushroom', 'black fungus', 'morel mushrooms', 'black truffle', 'field mushroom', 'king oyster mushroom', 'straw mushroom']
+      items: ['button mushroom', 'shiitake mushroom', 'portobello mushroom', 'wild mushroom', 'porcini', 'oyster mushroom', 'mixed mushrooms', 'chestnut mushroom', 'enoki mushroom', 'black fungus', 'morel mushrooms', 'black truffle', 'field mushroom', 'king oyster mushroom', 'straw mushroom'],
+      nonVegetarian: []
     },
     {
       name: 'Fruits',
-      items: ['lemon', 'lime', 'apple', 'banana', 'orange', 'raisins', 'mango', 'pineapple', 'peach', 'date', 'coconut', 'raisins', 'pear', 'pomegranate', 'grape']
+      items: ['lemon', 'lime', 'apple', 'banana', 'orange', 'raisins', 'mango', 'pineapple', 'peach', 'date', 'coconut', 'raisins', 'pear', 'pomegranate', 'grape'],
+      nonVegetarian: []
     },
     {
       name: 'Berries',
-      items: ['strawberry', 'blueberry', 'raspberry', 'cranberry', 'cherry', 'blackberry', 'berry mix', 'dried cherry', 'sour cherry', 'dried blueberries', 'goji berry', 'freeze-dried strawberry']
+      items: ['strawberry', 'blueberry', 'raspberry', 'cranberry', 'cherry', 'blackberry', 'berry mix', 'dried cherry', 'sour cherry', 'dried blueberries', 'goji berry', 'freeze-dried strawberry'],
+      nonVegetarian: []
+    },
+    {
+      name: 'Meat & Protein',
+      items: ['chicken', 'beef', 'pork', 'bacon', 'ham', 'sausage', 'ground beef', 'steak', 'turkey', 'lamb', 'shrimp', 'salmon', 'tuna', 'crab', 'lobster'],
+      nonVegetarian: ['chicken', 'beef', 'pork', 'bacon', 'ham', 'sausage', 'ground beef', 'steak', 'turkey', 'lamb', 'shrimp', 'salmon', 'tuna', 'crab', 'lobster']
+    },
+    {
+      name: 'Dairy & Alternatives',
+      items: ['cheese', 'cream', 'yogurt', 'butter', 'milk', 'almond milk', 'soy milk', 'coconut milk', 'oat milk', 'cream cheese', 'sour cream', 'parmesan', 'cheddar', 'mozzarella', 'feta'],
+      nonVegetarian: ['cheese', 'cream', 'yogurt', 'butter', 'milk', 'cream cheese', 'sour cream', 'parmesan', 'cheddar', 'mozzarella', 'feta']
     }
   ];
 
@@ -62,6 +77,14 @@ const RecipeSearch = ({ onSearch }) => {
       ...dietaryPreferences,
       [preference]: !dietaryPreferences[preference]
     });
+    
+    // Clear selected ingredients that don't match the new dietary preference
+    if (preference === 'vegetarian' && !dietaryPreferences.vegetarian) {
+      const nonVegItems = ingredientCategories.flatMap(category => 
+        category.nonVegetarian
+      );
+      setIngredients(ingredients.filter(item => !nonVegItems.includes(item)));
+    }
   };
 
   const handleSearch = () => {
@@ -71,17 +94,72 @@ const RecipeSearch = ({ onSearch }) => {
     });
   };
 
+  // Filter categories based on dietary preferences
+  const filterCategoriesByDiet = () => {
+    if (dietaryPreferences.vegetarian) {
+      return ingredientCategories.map(category => ({
+        ...category,
+        items: category.items.filter(item => !category.nonVegetarian.includes(item))
+      }));
+    }
+    return ingredientCategories;
+  };
+
   const filteredCategories = searchTerm
-    ? ingredientCategories.map(category => ({
+    ? filterCategoriesByDiet().map(category => ({
         ...category,
         items: category.items.filter(item =>
           item.toLowerCase().includes(searchTerm.toLowerCase())
         )
       })).filter(category => category.items.length > 0)
-    : ingredientCategories;
+    : filterCategoriesByDiet();
 
   return (
     <div className="lg:col-span-1">
+      {/* Dietary Preferences Section - Now First */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4 text-dark">Dietary Preferences</h2>
+        <div className="space-y-3">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
+              checked={dietaryPreferences.vegetarian}
+              onChange={() => handleDietaryChange('vegetarian')}
+            />
+            <span>Vegetarian</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
+              checked={dietaryPreferences.vegan}
+              onChange={() => handleDietaryChange('vegan')}
+            />
+            <span>Vegan</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
+              checked={dietaryPreferences.glutenFree}
+              onChange={() => handleDietaryChange('glutenFree')}
+            />
+            <span>Gluten Free</span>
+          </label>
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input 
+              type="checkbox" 
+              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
+              checked={dietaryPreferences.dairyFree}
+              onChange={() => handleDietaryChange('dairyFree')}
+            />
+            <span>Dairy Free</span>
+          </label>
+        </div>
+      </div>
+
+      {/* Ingredients Section - Now Second */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4 text-dark">Ingredients</h2>
         <div className="mb-4 relative" ref={dropdownRef}>
@@ -142,48 +220,6 @@ const RecipeSearch = ({ onSearch }) => {
               </button>
             </span>
           ))}
-        </div>
-      </div>
-
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-xl font-semibold mb-4 text-dark">Dietary Preferences</h2>
-        <div className="space-y-3">
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
-              checked={dietaryPreferences.vegetarian}
-              onChange={() => handleDietaryChange('vegetarian')}
-            />
-            <span>Vegetarian</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
-              checked={dietaryPreferences.vegan}
-              onChange={() => handleDietaryChange('vegan')}
-            />
-            <span>Vegan</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
-              checked={dietaryPreferences.glutenFree}
-              onChange={() => handleDietaryChange('glutenFree')}
-            />
-            <span>Gluten Free</span>
-          </label>
-          <label className="flex items-center space-x-2 cursor-pointer">
-            <input 
-              type="checkbox" 
-              className="form-checkbox h-5 w-5 text-primary rounded focus:ring-primary" 
-              checked={dietaryPreferences.dairyFree}
-              onChange={() => handleDietaryChange('dairyFree')}
-            />
-            <span>Dairy Free</span>
-          </label>
         </div>
         <button 
           className="btn-primary w-full mt-6"
