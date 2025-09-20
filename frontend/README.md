@@ -1,4 +1,6 @@
-# Getting Started with Create React App
+# AI-Powered Recipe Generator - Frontend
+
+This is the frontend application for the AI-Powered Recipe Generator. It provides a user-friendly interface for recipe discovery, AI-powered recipe generation, and recipe management.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -38,6 +40,51 @@ If you aren't satisfied with the build tool and configuration choices, you can `
 Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
 
 You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+
+## Features
+
+- **User Authentication**: Register, login, and profile management
+- **Recipe Discovery**: Browse, search, and filter recipes
+- **AI Recipe Generation**: Generate custom recipes based on ingredients and preferences
+- **Recipe Management**: Save, edit, and delete your recipes
+- **Reviews and Ratings**: Rate and review recipes
+- **Favorites**: Save and manage your favorite recipes
+- **Responsive Design**: Works on desktop, tablet, and mobile devices
+- **Theme Support**: Light and dark mode
+- **Multilingual Support**: Multiple language options
+
+## Tech Stack
+
+- **React**: Frontend library
+- **React Router**: Navigation
+- **Context API**: State management
+- **Axios**: HTTP client for API calls
+- **CSS Modules**: Styling
+- **React Icons**: Icon library
+
+## Pages
+
+- **Home**: Landing page with featured recipes and search
+- **Recipe Search**: Advanced search with filters
+- **Recipe Details**: Detailed view of a recipe
+- **Recipe Generator**: AI-powered recipe generation interface
+- **My Recipes**: User's created and saved recipes
+- **Favorites**: User's favorite recipes
+- **Profile**: User profile management
+- **Authentication**: Login and registration
+
+## Components
+
+- **Header**: Navigation and user menu
+- **Footer**: Site information and links
+- **RecipeCard**: Card display for recipes
+- **RecipeForm**: Form for creating/editing recipes
+- **RecipeSearch**: Search interface
+- **RecipeGenerator**: AI recipe generation interface
+- **ReviewForm**: Form for adding reviews
+- **Loader**: Loading indicator
+- **Message**: Alert/notification component
+- **Rating**: Star rating display
 
 ## Learn More
 
