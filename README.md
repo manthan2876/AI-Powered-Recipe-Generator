@@ -151,6 +151,13 @@ The AI-Powered Recipe Generator is a full-stack web application that helps users
 4. Save favorite recipes to your profile
 5. Rate and review recipes
 
+### Ingredient Search Steps
+1. On Home, select ingredients from the Ingredients panel (left).
+2. Optionally toggle dietary preferences (Vegetarian, Vegan, Gluten Free, Dairy Free).
+3. Click "Generate Recipes".
+4. Results render on the right; click a card to view full details.
+5. Use the heart button on the detail header to toggle Favorite.
+
 ## Future Enhancements
 
 - Mobile application

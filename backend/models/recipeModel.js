@@ -97,4 +97,9 @@ const recipeSchema = mongoose.Schema(
 
 const Recipe = mongoose.model('Recipe', recipeSchema);
 
+// Helpful indexes for efficient search
+// Index ingredients array and title for quick lookups
+recipeSchema.index({ ingredients: 1 });
+recipeSchema.index({ title: 'text' });
+
 export default Recipe;

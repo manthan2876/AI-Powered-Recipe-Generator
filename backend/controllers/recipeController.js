@@ -245,33 +245,43 @@ const generateRecipe = asyncHandler(async (req, res) => {
 // @route   GET /api/recipes/search
 // @access  Public
 const searchRecipesByIngredients = asyncHandler(async (req, res) => {
-  const { ingredients } = req.query;
+  const { ingredients, limit } = req.query;
 
   if (!ingredients) {
     res.status(400);
     throw new Error('Please provide ingredients');
   }
 
-  const ingredientList = ingredients.split(',').map(ing => ing.trim());
+  const ingredientList = ingredients.split(',').map((ing) => ing.trim()).filter(Boolean);
+  const pageLimit = Math.min(parseInt(limit || '12', 10), 50);
 
+  // First try local MongoDB search for recipes containing ALL provided ingredients
+  // Fallback to external retrieval API if configured
   try {
-    // Call the retrieval model API to search for recipes
-    // This would be replaced with your actual retrieval model endpoint
-    const modelResponse = await axios.get(
-      `${process.env.RETRIEVAL_MODEL_ENDPOINT || 'http://localhost:5001/api/search'}`,
-      {
-        params: {
-          ingredients: ingredientList.join(','),
-          limit: req.query.limit || 10
-        }
-      }
-    );
+    const mongoResults = await Recipe.find({ ingredients: { $all: ingredientList } })
+      .limit(pageLimit)
+      .select('-reviews');
 
-    res.json(modelResponse.data);
+    if (mongoResults && mongoResults.length) {
+      return res.json(mongoResults);
+    }
+  } catch (err) {
+    console.error('Mongo ingredient search error:', err);
+  }
+
+  // Fallback: external retrieval service
+  try {
+    const endpoint = process.env.RETRIEVAL_MODEL_ENDPOINT;
+    if (!endpoint) {
+      return res.json([]);
+    }
+    const modelResponse = await axios.get(endpoint, {
+      params: { ingredients: ingredientList.join(','), limit: pageLimit },
+    });
+    return res.json(modelResponse.data);
   } catch (error) {
-    console.error('Error searching recipes:', error);
-    res.status(500);
-    throw new Error('Failed to search recipes. Please try again.');
+    console.error('Error searching recipes (fallback):', error);
+    return res.json([]);
   }
 });
 

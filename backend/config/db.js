@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 
 const connectDB = async () => {
   try {
-    const uri = process.env.MONGO_URI || 'mongodb+srv://myAtlasDBUser:Manthan1528@myatlasclusteredu.rdkro.mongodb.net/recipe_generator_db';
+    const uri = process.env.MONGO_URI;
     const conn = await mongoose.connect(uri);
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {

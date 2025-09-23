@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useTheme } from '../contexts/ThemeContext';
 import { useLanguage, translations } from '../contexts/LanguageContext';
 import RecipeCard from '../components/recipe/RecipeCard';
 import RecipeDetail from '../components/recipe/RecipeDetail';
+import { getFavoriteRecipes } from '../api/recipes';
 
 const SavedRecipes = () => {
   const { theme } = useTheme();
@@ -10,29 +11,26 @@ const SavedRecipes = () => {
   const t = translations[language];
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   
-  // Mock saved recipes data
-  const savedRecipes = [
-    {
-      id: 1,
-      title: 'Vegetable Stir Fry',
-      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-      ingredients: ['broccoli', 'carrots', 'bell peppers', 'soy sauce', 'garlic'],
-      prepTime: '15 mins',
-      cookTime: '10 mins',
-      rating: 4.5,
-      dietary: { vegetarian: true, vegan: true, glutenFree: true, dairyFree: true }
-    },
-    {
-      id: 2,
-      title: 'Pasta Carbonara',
-      image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-      ingredients: ['pasta', 'eggs', 'bacon', 'parmesan cheese', 'black pepper'],
-      prepTime: '10 mins',
-      cookTime: '15 mins',
-      rating: 4.8,
-      dietary: { vegetarian: false, vegan: false, glutenFree: false, dairyFree: false }
-    }
-  ];
+  const [savedRecipes, setSavedRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      setLoading(true);
+      setError('');
+      try {
+        const data = await getFavoriteRecipes();
+        if (mounted) setSavedRecipes(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (mounted) setError(e?.message || 'Failed to load favorites');
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
+  }, []);
 
   const handleRecipeClick = (recipe) => {
     setSelectedRecipe(recipe);
@@ -48,11 +46,17 @@ const SavedRecipes = () => {
         {t.savedRecipes}
       </h1>
       
+      {loading && (
+        <div className={`mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</div>
+      )}
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 text-red-600 rounded border border-red-200 text-sm">{error}</div>
+      )}
       {savedRecipes.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {savedRecipes.map(recipe => (
             <RecipeCard 
-              key={recipe.id} 
+              key={recipe._id || recipe.id} 
               recipe={recipe} 
               onClick={handleRecipeClick} 
             />

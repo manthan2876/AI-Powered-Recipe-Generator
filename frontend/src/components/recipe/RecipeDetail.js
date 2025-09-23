@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import { toggleFavoriteRecipe as apiToggleFavorite } from '../../api/recipes';
 
 const RecipeDetail = ({ recipe, onClose }) => {
   const [isFavorite, setIsFavorite] = useState(false);
@@ -20,15 +21,38 @@ const RecipeDetail = ({ recipe, onClose }) => {
   }, [onClose]);
 
   if (!recipe) return null;
+  const dietary = recipe.dietary || {};
+  const image = recipe.image || recipe.thumbnail || 'https://via.placeholder.com/1200x600?text=Recipe';
+  const handleImgError = (e) => {
+    e.currentTarget.src = 'https://via.placeholder.com/1200x600?text=No+Image';
+  };
+  const title = recipe.title || recipe.name || 'Recipe';
+  const prep = recipe.prepTime || recipe.metadata?.prepTime || '-';
+  const cook = recipe.cookTime || recipe.metadata?.cookTime || '-';
+  const rating = typeof recipe.rating === 'number' ? recipe.rating : (recipe.avgRating || 0);
+  const ingredientsList = Array.isArray(recipe.ingredients) ? recipe.ingredients : (typeof recipe.ingredients === 'string' ? recipe.ingredients.split(',').map(s => s.trim()) : []);
 
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     setIsFavorite(!isFavorite);
-    // Here you would typically call your API to save the favorite status
+    try {
+      if (recipe._id) {
+        await apiToggleFavorite(recipe._id);
+      }
+    } catch (e) {
+      // revert on error
+      setIsFavorite((prev) => !prev);
+    }
   };
 
-  const handleRating = (rating) => {
+  const handleRating = async (rating) => {
     setUserRating(rating);
-    // Here you would typically call your API to save the rating
+    try {
+      if (recipe._id) {
+        // Optional comment left blank
+        const { createRecipeReview } = await import('../../api/recipes');
+        await createRecipeReview(recipe._id, { rating, comment: '' });
+      }
+    } catch (e) {}
   };
 
   return (
@@ -46,14 +70,15 @@ const RecipeDetail = ({ recipe, onClose }) => {
         {/* Recipe Header */}
         <div className="relative">
           <img 
-            src={recipe.image} 
-            alt={recipe.title} 
+            src={image} 
+            onError={handleImgError}
+            alt={title} 
             className="w-full h-64 object-cover rounded-t-lg" 
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black to-transparent rounded-t-lg"></div>
           <div className="absolute bottom-0 left-0 p-6 w-full">
             <div className="flex justify-between items-start">
-              <h1 className="text-3xl font-bold text-white">{recipe.title}</h1>
+              <h1 className="text-3xl font-bold text-white">{title}</h1>
               <button 
                 onClick={toggleFavorite}
                 className={`p-2 rounded-full ${isFavorite ? 'text-red-500' : 'text-white'}`}
@@ -64,10 +89,10 @@ const RecipeDetail = ({ recipe, onClose }) => {
               </button>
             </div>
             <div className="flex flex-wrap gap-2 mt-2">
-              {recipe.dietary.vegetarian && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Vegetarian</span>}
-              {recipe.dietary.vegan && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Vegan</span>}
-              {recipe.dietary.glutenFree && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Gluten-Free</span>}
-              {recipe.dietary.dairyFree && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Dairy-Free</span>}
+              {dietary.vegetarian && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Vegetarian</span>}
+              {dietary.vegan && <span className="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">Vegan</span>}
+              {dietary.glutenFree && <span className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded">Gluten-Free</span>}
+              {dietary.dairyFree && <span className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">Dairy-Free</span>}
             </div>
           </div>
         </div>
@@ -78,12 +103,12 @@ const RecipeDetail = ({ recipe, onClose }) => {
             <div className="flex items-center space-x-4 mb-2 md:mb-0">
               <div>
                 <span className="text-gray-500 block text-sm">Prep Time</span>
-                <span className="font-medium">{recipe.prepTime}</span>
+                <span className="font-medium">{prep}</span>
               </div>
               <div className="h-10 border-l border-gray-300"></div>
               <div>
                 <span className="text-gray-500 block text-sm">Cook Time</span>
-                <span className="font-medium">{recipe.cookTime}</span>
+                <span className="font-medium">{cook}</span>
               </div>
               <div className="h-10 border-l border-gray-300"></div>
               <div>
@@ -92,7 +117,7 @@ const RecipeDetail = ({ recipe, onClose }) => {
                   <svg className="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                     <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                   </svg>
-                  <span className="ml-1">{recipe.rating}</span>
+                  <span className="ml-1">{rating}</span>
                 </div>
               </div>
             </div>
@@ -144,7 +169,7 @@ const RecipeDetail = ({ recipe, onClose }) => {
             <div>
               <h2 className="text-xl font-semibold mb-4">Ingredients</h2>
               <ul className="space-y-2">
-                {recipe.ingredients.map((ingredient, index) => (
+                {ingredientsList.map((ingredient, index) => (
                   <li key={index} className="flex items-start">
                     <svg className="w-5 h-5 text-primary mr-2 mt-0.5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />

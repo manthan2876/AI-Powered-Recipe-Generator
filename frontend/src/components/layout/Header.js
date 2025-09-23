@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import AuthModal from '../auth/AuthModal';
+import { logout as apiLogout } from '../../api/auth';
 import { useTheme } from '../../contexts/ThemeContext';
 import { useLanguage, languageOptions } from '../../contexts/LanguageContext';
 
@@ -42,10 +43,10 @@ const Header = () => {
     setShowAuthModal(true);
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try { await apiLogout(); } catch (e) {}
     setIsLoggedIn(false);
     setShowUserDropdown(false);
-    // Here you would typically call your API to logout
   };
 
   return (

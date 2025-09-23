@@ -11,6 +11,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AboutUs from './pages/AboutUs';
 import ManageAccount from './pages/ManageAccount';
 import SavedRecipes from './pages/SavedRecipes';
+import { searchRecipesByIngredients as apiSearchRecipesByIngredients, getTopRecipes as apiGetTopRecipes, getRecipes as apiGetRecipes } from './api/recipes';
 
 const AppContent = () => {
   const { theme } = useTheme();
@@ -21,6 +22,9 @@ const AppContent = () => {
   const [showIngredients, setShowIngredients] = useState(false);
   const [showLanguageDropdown, setShowLanguageDropdown] = useState(false);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchError, setSearchError] = useState('');
   
   // Refs for dropdown containers
   const ingredientsRef = useRef(null);
@@ -57,81 +61,48 @@ const AppContent = () => {
     }
   };
 
-  // Mock recipe data
-  const recipes = [
-    {
-      id: 1,
-      title: 'Vegetable Stir Fry',
-      image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-      ingredients: ['broccoli', 'carrots', 'bell peppers', 'soy sauce', 'garlic'],
-      prepTime: '15 mins',
-      cookTime: '10 mins',
-      rating: 4.5,
-      dietary: { vegetarian: true, vegan: true, glutenFree: true, dairyFree: true }
-    },
-    {
-      id: 2,
-      title: 'Pasta Carbonara',
-      image: 'https://images.unsplash.com/photo-1546549032-9571cd6b27df?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-      ingredients: ['pasta', 'eggs', 'bacon', 'parmesan cheese', 'black pepper'],
-      prepTime: '10 mins',
-      cookTime: '15 mins',
-      rating: 4.8,
-      dietary: { vegetarian: false, vegan: false, glutenFree: false, dairyFree: false }
-    },
-    {
-      id: 3,
-      title: 'Berry Smoothie Bowl',
-      image: 'https://images.unsplash.com/photo-1577805947697-89e18249d767?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60',
-      ingredients: ['frozen berries', 'banana', 'almond milk', 'honey', 'granola'],
-      prepTime: '5 mins',
-      cookTime: '0 mins',
-      rating: 4.2,
-      dietary: { vegetarian: true, vegan: false, glutenFree: true, dairyFree: false }
-    }
-    ,
-    {
-      id: 4,
-      title: 'Chicken Tikka Masala',
-      image: 'https://images.unsplash.com/photo-1604908554049-01f5b279a4b9?auto=format&fit=crop&w=500&q=60',
-      ingredients: ['chicken', 'tomato', 'yogurt', 'garam masala', 'garlic', 'ginger'],
-      prepTime: '20 mins',
-      cookTime: '35 mins',
-      rating: 4.6,
-      dietary: { vegetarian: false, vegan: false, glutenFree: true, dairyFree: false }
-    },
-    {
-      id: 5,
-      title: 'Quinoa Avocado Salad',
-      image: 'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=500&q=60',
-      ingredients: ['quinoa', 'avocado', 'cherry tomatoes', 'cucumber', 'lemon', 'olive oil'],
-      prepTime: '15 mins',
-      cookTime: '15 mins',
-      rating: 4.1,
-      dietary: { vegetarian: true, vegan: true, glutenFree: true, dairyFree: true }
-    },
-    {
-      id: 6,
-      title: 'Shrimp Garlic Pasta',
-      image: 'https://images.unsplash.com/photo-1521389508051-d7ffb5dc8bbf?auto=format&fit=crop&w=500&q=60',
-      ingredients: ['shrimp', 'pasta', 'garlic', 'butter', 'parsley', 'lemon'],
-      prepTime: '10 mins',
-      cookTime: '15 mins',
-      rating: 4.4,
-      dietary: { vegetarian: false, vegan: false, glutenFree: false, dairyFree: false }
-    }
-  ];
+  const [suggestedRecipes, setSuggestedRecipes] = useState([]);
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      try {
+        const top = await apiGetTopRecipes();
+        if (mounted && Array.isArray(top) && top.length) {
+          setSuggestedRecipes(top);
+          return;
+        }
+      } catch {}
+      try {
+        const list = await apiGetRecipes({ pageNumber: 1 });
+        if (mounted) setSuggestedRecipes(list?.recipes || []);
+      } catch {}
+    })();
+    return () => { mounted = false; };
+  }, []);
 
-  // Collect unique ingredients for the "Key Ingredients" dropdown
+  // Collect unique ingredients for the "Key Ingredients" dropdown (from suggested results)
   const allIngredients = Array.from(
     new Set(
-      recipes.flatMap(r => r.ingredients)
+      (suggestedRecipes || []).flatMap(r => Array.isArray(r.ingredients) ? r.ingredients : [])
     )
   ).sort();
 
-  const handleSearch = (searchParams) => {
-    console.log('Searching with params:', searchParams);
-    // Here you would typically call your API to get recipes based on search params
+  const handleSearch = async (searchParams) => {
+    const ingredients = searchParams?.ingredients || [];
+    setIsSearching(true);
+    setSearchError('');
+    try {
+      const data = await apiSearchRecipesByIngredients({ ingredients, limit: 12 });
+      // The retrieval API might return an object or array; normalize to array
+      const results = Array.isArray(data) ? data : (data?.recipes || data?.results || []);
+      setSearchResults(results);
+      setActiveTab('search');
+    } catch (err) {
+      setSearchError(err?.message || 'Failed to fetch recipes');
+      setSearchResults([]);
+    } finally {
+      setIsSearching(false);
+    }
   };
 
   const handleRecipeClick = (recipe) => {
@@ -296,18 +267,27 @@ const AppContent = () => {
                 </button>
               </div>
 
-              {/* Suggested Recipes Section */}
+              {/* Two-column layout: search panel + results */}
               {activeTab === 'search' && (
-                <div>
-                  <h2 className="text-2xl font-bold mb-4">Suggested Recipes</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {recipes.map(recipe => (
-                      <RecipeCard 
-                        key={recipe.id} 
-                        recipe={recipe} 
-                        onClick={handleRecipeClick} 
-                      />
-                    ))}
+                <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+                  <RecipeSearch onSearch={handleSearch} />
+                  <div className="lg:col-span-3">
+                    <div className="flex items-center justify-between mb-4">
+                      <h2 className="text-2xl font-bold">{searchResults.length ? 'Results' : 'Suggested Recipes'}</h2>
+                      {isSearching && <span className="text-sm text-gray-500">Searching…</span>}
+                    </div>
+                    {searchError && (
+                      <div className="mb-4 p-3 bg-red-50 text-red-600 rounded border border-red-200 text-sm">{searchError}</div>
+                    )}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {(searchResults.length ? searchResults : suggestedRecipes).map((recipe, idx) => (
+                        <RecipeCard 
+                          key={recipe._id || recipe.id || idx} 
+                          recipe={recipe} 
+                          onClick={handleRecipeClick} 
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               )}

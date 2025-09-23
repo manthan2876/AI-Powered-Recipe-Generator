@@ -1,3 +1,25 @@
+Setup (MongoDB Compass + Local)
+
+1) Create a database and connection string in MongoDB Compass
+   - Open Compass, connect to your local or Atlas cluster
+   - Create database: recipe_generator_db
+   - Collections: users, recipes
+
+2) Environment variables (create .env at project root)
+   MONGO_URI=mongodb://localhost:27017/recipe_generator_db
+   JWT_SECRET=change_me
+   NODE_ENV=development
+   PORT=5000
+
+3) Start servers from project root
+   npm install
+   npm --prefix frontend install
+   npm run dev
+
+Notes
+ - Ingredient search uses Mongo first with { ingredients: { $all: [...] } } and falls back to RETRIEVAL_MODEL_ENDPOINT when configured.
+ - Indexes are defined on ingredients and title for fast searches.
+
 # AI-Powered Recipe Generator - Backend
 
 This is the backend server for the AI-Powered Recipe Generator application. It provides RESTful API endpoints for user authentication, recipe management, and AI-powered recipe generation and search.

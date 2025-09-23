@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { login as apiLogin, register as apiRegister } from '../../api/auth';
 
 const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
   const [mode, setMode] = useState(initialMode);
@@ -62,15 +63,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Here you would typically call your API
-      console.log('Form submitted:', formData);
-      
-      // For demo purposes, simulate successful login/register
-      onClose(true);
+      try {
+        if (mode === 'login') {
+          await apiLogin({ email: formData.email, password: formData.password });
+        } else {
+          await apiRegister({ name: formData.name, email: formData.email, password: formData.password });
+        }
+        onClose(true);
+      } catch (err) {
+        setErrors({ form: err?.message || 'Something went wrong' });
+      }
     }
   };
 
@@ -96,6 +102,7 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
         </h2>
         
         <form onSubmit={handleSubmit}>
+          {errors.form && <div className="mb-3 p-2 bg-red-50 text-red-600 rounded text-sm">{errors.form}</div>}
           {mode === 'register' && (
             <div className="mb-4">
               <label className="block text-gray-700 text-sm font-medium mb-2" htmlFor="name">
