@@ -11,7 +11,20 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AboutUs from './pages/AboutUs';
 import ManageAccount from './pages/ManageAccount';
 import SavedRecipes from './pages/SavedRecipes';
+import ShoppingLists from './pages/ShoppingLists';
+import RecipeGenerationPage from './pages/RecipeGenerationPage';
 import { searchRecipesByIngredients as apiSearchRecipesByIngredients, getTopRecipes as apiGetTopRecipes, getRecipes as apiGetRecipes } from './api/recipes';
+
+// Categorized ingredients
+const pantryEssentials = [
+  'butter', 'egg', 'garlic', 'milk', 'onion', 'sugar', 'flour', 'olive oil',
+  'garlic powder', 'white rice', 'cinnamon', 'ketchup', 'soy sauce', 'mayonnaise', 'vegetable oil'
+];
+
+const vegetablesAndGreens = [
+  'garlic', 'onion', 'bell pepper', 'scallion', 'carrot', 'tomato', 'potato',
+  'red onion', 'celery', 'avocado', 'zucchini', 'shallot', 'cherry tomato', 'cucumber'
+];
 
 const AppContent = () => {
   const { theme } = useTheme();
@@ -25,11 +38,11 @@ const AppContent = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState('');
-  
+
   // Refs for dropdown containers
   const ingredientsRef = useRef(null);
   const languageDropdownRef = useRef(null);
-  
+
   // Handle click outside to close dropdowns
   useEffect(() => {
     function handleClickOutside(event) {
@@ -37,22 +50,22 @@ const AppContent = () => {
       if (ingredientsRef.current && !ingredientsRef.current.contains(event.target)) {
         setShowIngredients(false);
       }
-      
+
       // Close language dropdown if clicked outside
       if (languageDropdownRef.current && !languageDropdownRef.current.contains(event.target)) {
         setShowLanguageDropdown(false);
       }
     }
-    
+
     // Add event listener
     document.addEventListener('mousedown', handleClickOutside);
-    
+
     // Clean up the event listener
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
   }, []);
-  
+
   const toggleIngredient = (ingredient) => {
     if (selectedIngredients.includes(ingredient)) {
       setSelectedIngredients(selectedIngredients.filter(item => item !== ingredient));
@@ -80,19 +93,23 @@ const AppContent = () => {
     return () => { mounted = false; };
   }, []);
 
-  // Collect unique ingredients for the "Key Ingredients" dropdown (from suggested results)
-  const allIngredients = Array.from(
-    new Set(
-      (suggestedRecipes || []).flatMap(r => Array.isArray(r.ingredients) ? r.ingredients : [])
-    )
-  ).sort();
-
   const handleSearch = async (searchParams) => {
     const ingredients = searchParams?.ingredients || [];
+    const dietaryPrefs = searchParams?.dietaryPreferences || {};
+
     setIsSearching(true);
     setSearchError('');
     try {
-      const data = await apiSearchRecipesByIngredients({ ingredients, limit: 12 });
+      console.log("Searching with ingredients:", ingredients);
+      // Pass dietary preferences as query parameters
+      const data = await apiSearchRecipesByIngredients({
+        ingredients,
+        limit: 12,
+        vegetarian: dietaryPrefs.vegetarian || undefined,
+        vegan: dietaryPrefs.vegan || undefined,
+        glutenFree: dietaryPrefs.glutenFree || undefined,
+        dairyFree: dietaryPrefs.dairyFree || undefined
+      });
       // The retrieval API might return an object or array; normalize to array
       const results = Array.isArray(data) ? data : (data?.recipes || data?.results || []);
       setSearchResults(results);
@@ -139,7 +156,7 @@ const AppContent = () => {
                 {/* Language dropdown */}
                 <div className="flex items-center space-x-2">
                   <div className="relative group" ref={languageDropdownRef}>
-                    <button 
+                    <button
                       className={`flex items-center space-x-1 ${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}
                       onClick={() => setShowLanguageDropdown(!showLanguageDropdown)}
                     >
@@ -155,7 +172,7 @@ const AppContent = () => {
                     {showLanguageDropdown && (
                       <div className="absolute right-0 mt-2 w-36 bg-white rounded-md shadow-lg py-1 z-10 border border-gray-200">
                         {languageOptions.map(option => (
-                          <button 
+                          <button
                             key={option.code}
                             onClick={() => {
                               changeLanguage(option.code);
@@ -177,24 +194,22 @@ const AppContent = () => {
                   </button>
                 </div>
               </div>
-              
+
               {/* Filter options */}
               <div className="mb-6 flex flex-wrap gap-2">
                 <div className="relative" ref={ingredientsRef}>
-                  <button 
-                    className={`px-3 py-1 rounded-full text-sm flex items-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700 hover:bg-gray-700' : 'bg-white border border-gray-300 hover:bg-gray-50'}`}
+                  <button
                     onClick={() => setShowIngredients(!showIngredients)}
+                    className={`px-4 py-2 rounded-lg border flex items-center justify-between gap-2 ${theme === 'dark' ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-300 text-dark'}`}
                   >
                     <span>{t.keyIngredients}</span>
-                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <svg className={`w-4 h-4 transform transition-transform ${showIngredients ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                     </svg>
                   </button>
-                  
-                  {/* Ingredients dropdown panel */}
+
                   {showIngredients && (
-                    <div className={`absolute left-0 mt-2 w-72 rounded-md shadow-lg py-4 px-3 z-20 border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-                      <h3 className="text-lg font-medium mb-2">Ingredients</h3>
+                    <div className={`absolute left-0 mt-2 w-72 p-4 bg-white rounded-md shadow-lg z-10 ${theme === 'dark' ? 'bg-gray-800 text-white' : ''}`}>
                       <div className="relative mb-4">
                         <input
                           type="text"
@@ -207,7 +222,7 @@ const AppContent = () => {
                           </svg>
                         </div>
                       </div>
-                      
+
                       <div className="max-h-60 overflow-y-auto pr-2">
                         <div className="mb-3">
                           <h4 className="text-sm font-medium mb-2">Pantry Essentials <span className="text-xs text-gray-500">15 items</span></h4>
@@ -225,7 +240,7 @@ const AppContent = () => {
                             ))}
                           </div>
                         </div>
-                        
+
                         <div>
                           <h4 className="text-sm font-medium mb-2">Vegetables & Greens <span className="text-xs text-gray-500">15 items</span></h4>
                           <div className="grid grid-cols-2 gap-2">
@@ -246,11 +261,11 @@ const AppContent = () => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Other filter buttons with similar theme conditional classes */}
                 {/* ... */}
               </div>
-              
+
               {/* Tabs */}
               <div className="border-b mb-6">
                 <button
@@ -281,10 +296,10 @@ const AppContent = () => {
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {(searchResults.length ? searchResults : suggestedRecipes).map((recipe, idx) => (
-                        <RecipeCard 
-                          key={recipe._id || recipe.id || idx} 
-                          recipe={recipe} 
-                          onClick={handleRecipeClick} 
+                        <RecipeCard
+                          key={recipe._id || recipe.id || idx}
+                          recipe={recipe}
+                          onClick={handleRecipeClick}
                         />
                       ))}
                     </div>
@@ -296,15 +311,17 @@ const AppContent = () => {
           <Route path="/about" element={<AboutUs />} />
           <Route path="/account" element={<ManageAccount />} />
           <Route path="/saved-recipes" element={<SavedRecipes />} />
+          <Route path="/shopping-lists" element={<ShoppingLists />} />
+          <Route path="/generate-recipe" element={<RecipeGenerationPage />} />
         </Routes>
       </main>
 
       <Footer />
       {/* Recipe Detail Modal */}
       {selectedRecipe && (
-        <RecipeDetail 
-          recipe={selectedRecipe} 
-          onClose={handleCloseRecipeDetail} 
+        <RecipeDetail
+          recipe={selectedRecipe}
+          onClose={handleCloseRecipeDetail}
         />
       )}
     </div>
@@ -322,17 +339,3 @@ function App() {
 }
 
 export default App;
-
-
-// Categorized ingredients
-const pantryEssentials = [
-  'butter', 'egg', 'garlic', 'milk', 'onion', 'sugar', 'flour', 'olive oil',
-  'garlic powder', 'white rice', 'cinnamon', 'ketchup', 'soy sauce', 'mayonnaise', 'vegetable oil'
-];
-
-const vegetablesAndGreens = [
-  'garlic', 'onion', 'bell pepper', 'scallion', 'carrot', 'tomato', 'potato',
-  'red onion', 'celery', 'avocado', 'zucchini', 'shallot', 'cherry tomato', 'cucumber'
-];
-
-// state and handlers for ingredients are defined inside the component

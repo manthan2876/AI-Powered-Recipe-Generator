@@ -9,10 +9,14 @@ const getBaseUrl = () => {
 
 const BASE = getBaseUrl();
 
-export async function searchRecipesByIngredients({ ingredients = [], limit = 12 }) {
+export async function searchRecipesByIngredients({ ingredients = [], limit = 12, vegetarian, vegan, glutenFree, dairyFree }) {
   const params = new URLSearchParams();
   if (ingredients.length) params.set('ingredients', ingredients.join(','));
   if (limit) params.set('limit', String(limit));
+  if (vegetarian) params.set('vegetarian', 'true');
+  if (vegan) params.set('vegan', 'true');
+  if (glutenFree) params.set('glutenFree', 'true');
+  if (dairyFree) params.set('dairyFree', 'true');
 
   const res = await fetch(`${BASE}/api/recipes/search?${params.toString()}`, {
     method: 'GET',

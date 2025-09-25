@@ -1,6 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { createShoppingList, addShoppingListItem, getShoppingLists, updateShoppingList } from '../../api/shoppingLists';
 
 const RecipeCard = ({ recipe, onClick }) => {
+  const [isAddingToList, setIsAddingToList] = useState(false);
   const dietary = recipe.dietary || {};
   const prep = recipe.prepTime || recipe.metadata?.prepTime || '-';
   const cook = recipe.cookTime || recipe.metadata?.cookTime || '-';
@@ -42,11 +44,63 @@ const RecipeCard = ({ recipe, onClick }) => {
           <button className="text-primary hover:text-primary-dark text-sm font-medium">
             View Recipe
           </button>
-          <button className="text-gray-500 hover:text-primary">
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-            </svg>
-          </button>
+          <div className="flex space-x-2">
+            <button 
+              className={`text-gray-500 hover:text-green-600 ${isAddingToList ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  setIsAddingToList(true);
+                  // Get existing shopping lists
+                  const lists = await getShoppingLists();
+                  
+                  // Create a new list if none exists or use the first one
+                  let shoppingList;
+                  if (!lists || lists.length === 0) {
+                    shoppingList = await createShoppingList({
+                      name: `Shopping List with ${recipe.title}`,
+                      items: [],
+                      recipes: [recipe._id]
+                    });
+                  } else {
+                    // Use the first shopping list
+                    shoppingList = lists[0];
+                    
+                    // Add recipe ingredients to the shopping list
+                    await updateShoppingList(shoppingList._id, {
+                      ...shoppingList,
+                      recipes: [...(shoppingList.recipes || []), recipe._id]
+                    });
+                  }
+                  
+                  alert(`Added ${recipe.title} ingredients to shopping list`);
+                } catch (error) {
+                  console.error('Error adding to shopping list:', error);
+                  alert('Failed to add to shopping list. Please try again.');
+                } finally {
+                  setIsAddingToList(false);
+                }
+              }}
+              title="Add to Shopping List"
+              disabled={isAddingToList}
+            >
+              {isAddingToList ? (
+                <svg className="w-5 h-5 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              ) : (
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                </svg>
+              )}
+            </button>
+            <button className="text-gray-500 hover:text-primary">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

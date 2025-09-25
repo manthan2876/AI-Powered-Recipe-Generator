@@ -68,12 +68,20 @@ const AuthModal = ({ isOpen, onClose, initialMode = 'login' }) => {
     
     if (validateForm()) {
       try {
+        let userData;
         if (mode === 'login') {
-          await apiLogin({ email: formData.email, password: formData.password });
+          userData = await apiLogin({ email: formData.email, password: formData.password });
         } else {
-          await apiRegister({ name: formData.name, email: formData.email, password: formData.password });
+          userData = await apiRegister({ name: formData.name, email: formData.email, password: formData.password });
         }
+        // Store user info in localStorage
+        localStorage.setItem('userInfo', JSON.stringify(userData));
+        // Trigger storage event to update other components
+        window.dispatchEvent(new Event('storage'));
+        // Close modal and indicate success
         onClose(true);
+        // Refresh the page to update UI
+        window.location.reload();
       } catch (err) {
         setErrors({ form: err?.message || 'Something went wrong' });
       }

@@ -8,8 +8,8 @@ const ManageAccount = () => {
   const t = translations[language];
   
   const [user, setUser] = useState({
-    name: 'John Doe',
-    email: 'john.doe@example.com',
+    name: 'Manthan',
+    email: 'manthan1@example.com',
     preferences: {
       vegetarian: false,
       vegan: false,

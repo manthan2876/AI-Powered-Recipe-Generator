@@ -205,7 +205,7 @@ const generateRecipe = asyncHandler(async (req, res) => {
     // Call the AI model API to generate a recipe
     // This would be replaced with your actual AI model endpoint
     const modelResponse = await axios.post(
-      process.env.AI_MODEL_ENDPOINT || 'http://localhost:5001/api/generate',
+      process.env.AI_MODEL_ENDPOINT || 'http://localhost:5001/predict',
       {
         ingredients,
         dietaryRestrictions,
@@ -215,7 +215,7 @@ const generateRecipe = asyncHandler(async (req, res) => {
     );
 
     const generatedRecipe = modelResponse.data;
-
+    console.log(generatedRecipe);
     // Create a new recipe in the database
     const recipe = new Recipe({
       user: req.user._id,
@@ -247,18 +247,21 @@ const generateRecipe = asyncHandler(async (req, res) => {
 const searchRecipesByIngredients = asyncHandler(async (req, res) => {
   const { ingredients, limit } = req.query;
 
-  if (!ingredients) {
-    res.status(400);
-    throw new Error('Please provide ingredients');
-  }
-
-  const ingredientList = ingredients.split(',').map((ing) => ing.trim()).filter(Boolean);
+  // Make ingredients optional
+  const ingredientList = ingredients 
+    ? ingredients.split(',').map((ing) => ing.trim()).filter(Boolean)
+    : [];
   const pageLimit = Math.min(parseInt(limit || '12', 10), 50);
 
   // First try local MongoDB search for recipes containing ALL provided ingredients
   // Fallback to external retrieval API if configured
   try {
-    const mongoResults = await Recipe.find({ ingredients: { $all: ingredientList } })
+    // If no ingredients provided, return random recipes
+    const query = ingredientList.length > 0 
+      ? { ingredients: { $all: ingredientList } }
+      : {};
+      
+    const mongoResults = await Recipe.find(query)
       .limit(pageLimit)
       .select('-reviews');
 

@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import asyncHandler from 'express-async-handler';
 import User from '../models/userModel.js';
-
+import dotenv from 'dotenv';
+dotenv.config();
 const protect = asyncHandler(async (req, res, next) => {
   let token;
 
@@ -9,8 +10,8 @@ const protect = asyncHandler(async (req, res, next) => {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'abc123');
+      console.log(decoded);
       req.user = await User.findById(decoded.userId).select('-password');
 
       next();

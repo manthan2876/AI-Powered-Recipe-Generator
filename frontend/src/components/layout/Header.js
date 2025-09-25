@@ -14,6 +14,24 @@ const Header = () => {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Check login status on component mount and when localStorage changes
+  useEffect(() => {
+    const checkLoginStatus = () => {
+      const userInfo = localStorage.getItem('userInfo');
+      setIsLoggedIn(!!userInfo);
+    };
+    
+    // Check on mount
+    checkLoginStatus();
+    
+    // Add event listener for storage changes
+    window.addEventListener('storage', checkLoginStatus);
+    
+    return () => {
+      window.removeEventListener('storage', checkLoginStatus);
+    };
+  }, []);
+
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -44,9 +62,22 @@ const Header = () => {
   };
 
   const handleLogout = async () => {
-    try { await apiLogout(); } catch (e) {}
-    setIsLoggedIn(false);
-    setShowUserDropdown(false);
+    try { 
+      await apiLogout(); 
+      localStorage.removeItem('userInfo');
+      // Dispatch a storage event to notify other components
+      window.dispatchEvent(new Event('storage'));
+      setIsLoggedIn(false);
+      setShowUserDropdown(false);
+      // Redirect to home page
+      window.location.href = '/';
+    } catch (e) {
+      console.error('Logout error:', e);
+      // Still remove user info even if API call fails
+      localStorage.removeItem('userInfo');
+      setIsLoggedIn(false);
+      window.location.href = '/';
+    }
   };
 
   return (
@@ -65,6 +96,9 @@ const Header = () => {
           <div className="hidden md:flex items-center space-x-6">
             <Link to="/" className={`${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}>
               {language === 'en' ? 'Home' : language === 'hi' ? 'होम' : 'હોમ'}
+            </Link>
+            <Link to="/generate-recipe" className={`${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}>
+              {language === 'en' ? 'Generate Recipe' : language === 'hi' ? 'रेसिपी जनरेट करें' : 'રેસિપી જનરેટ કરો'}
             </Link>
             <Link to="/about" className={`${theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-primary'}`}>
               {language === 'en' ? 'About Us' : language === 'hi' ? 'हमारे बारे में' : 'અમારા વિશે'}
@@ -99,9 +133,25 @@ const Header = () => {
                   <Link to="/saved-recipes" className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
                     <div className="flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
                       </svg>
-                      {language === 'en' ? 'Saved Recipes' : language === 'hi' ? 'सहेजी गई रेसिपी' : 'સાચવેલી રેસિપી'}
+                      {language === 'en' ? 'Saved Recipes' : language === 'hi' ? 'सहेजे गए व्यंजन' : 'સાચવેલી રેસિપી'}
+                    </div>
+                  </Link>
+                  <Link to="/generate-recipe" className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      {language === 'en' ? 'Generate Recipe' : language === 'hi' ? 'रेसिपी जनरेट करें' : 'રેસિપી જનરેટ કરો'}
+                    </div>
+                  </Link>
+                  <Link to="/shopping-lists" className={`block px-4 py-2 text-sm ${theme === 'dark' ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-700 hover:bg-gray-100'}`}>
+                    <div className="flex items-center">
+                      <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                      {language === 'en' ? 'Shopping Lists' : language === 'hi' ? 'खरीदारी सूची' : 'ખરીદી યાદી'}
                     </div>
                   </Link>
                   

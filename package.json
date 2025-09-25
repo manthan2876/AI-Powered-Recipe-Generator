@@ -8,8 +8,11 @@
     "start": "node backend/server.js",
     "server": "nodemon backend/server.js",
     "client": "npm run start --prefix frontend",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "seed": "node backend/seed.js"
+    "python-service": "node backend/start_python_service.js",
+    "dev": "concurrently \"npm run python-service\" \"npm run server\" \"npm run client\"",
+    "seed": "node backend/seed.js",
+    "build": "npm install && npm install --prefix frontend && npm run build:win --prefix frontend",
+    "heroku-postbuild": "NPM_CONFIG_PRODUCTION=false npm install --prefix frontend && npm run build --prefix frontend"
   },
   "author": "Brad Traversy",
   "license": "MIT",
@@ -22,10 +25,11 @@
     "express-async-handler": "^1.2.0",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",
+    "react-bootstrap": "^2.10.10",
     "react-router-dom": "^7.8.2"
   },
   "devDependencies": {
     "concurrently": "^8.0.1",
-    "nodemon": "^2.0.22"
+    "nodemon": "^3.1.10"
   }
 }

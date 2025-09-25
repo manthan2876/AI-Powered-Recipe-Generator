@@ -23,3 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .env
+model.pkl
+tokenizer.pkl
+model_dir

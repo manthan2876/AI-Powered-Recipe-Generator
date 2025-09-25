@@ -88,6 +88,8 @@ const RecipeSearch = ({ onSearch }) => {
   };
 
   const handleSearch = () => {
+    // Ensure ingredients are properly passed to the search function
+    console.log("Searching with ingredients:", ingredients);
     onSearch({
       ingredients,
       dietaryPreferences
