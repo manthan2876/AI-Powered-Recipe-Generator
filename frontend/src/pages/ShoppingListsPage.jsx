@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
-import ShoppingList from "../components/ShoppingList/ShoppingList";
-import ShoppingListDetail from "../components/ShoppingListDetail/ShoppingListDetail";
+import ShoppingList from "../components/ShoppingList";
+import ShoppingListDetail from "../components/ShoppingListDetail";
 import { getShoppingLists, createShoppingList, deleteShoppingList } from "../services/shoppingLists";
 
-function ShoppingLists() {
+function ShoppingListsPage() {
   const [lists, setLists] = useState([]);
   const [newListName, setNewListName] = useState("");
   const [activeList, setActiveList] = useState(null);
@@ -64,4 +64,4 @@ function ShoppingLists() {
   );
 }
 
-export default ShoppingLists;
+export default ShoppingListsPage;

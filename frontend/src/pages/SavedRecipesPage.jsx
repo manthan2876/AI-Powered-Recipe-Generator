@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import RecipeCard from "../components/RecipeCard/RecipeCard.js";
+import RecipeCard from "../components/RecipeCard";
 import { getSavedRecipes, removeSavedRecipe } from "../services/recipes";
 
 const SavedRecipes = () => {

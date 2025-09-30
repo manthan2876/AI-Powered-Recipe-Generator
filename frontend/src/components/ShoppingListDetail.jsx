@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { addShoppingListItem, updateShoppingListItem, deleteShoppingListItem } from "../../services/shoppingLists";
+import { addShoppingListItem, updateShoppingListItem, deleteShoppingListItem } from "../services/shoppingLists";
 
 function ShoppingListDetail({ list, onClose, onUpdated }) {
   const [itemForm, setItemForm] = useState({ ingredient: "", quantity: "" });

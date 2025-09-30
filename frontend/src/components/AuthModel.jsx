@@ -1,6 +1,6 @@
 import React, { useState, useContext } from "react";
-import { AuthContext } from "../../contexts/AuthContext";
-import { loginUser, registerUser } from "../../services/auth";
+import { AuthContext } from "../contexts/AuthContext";
+import { loginUser, registerUser } from "../services/auth";
 
 function AuthModal({ onClose }) {
   const [isLogin, setIsLogin] = useState(true);

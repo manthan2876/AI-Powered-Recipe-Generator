@@ -1,15 +1,15 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
-import Home from "./pages/Home";
-import Recipes from "./pages/Recipes";
-import ShoppingLists from "./pages/ShoppingLists";
-import SavedRecipes from "./pages/SavedRecipes";
+import Home from "./pages/HomePage";
+import Recipes from "./pages/RecipesPage";
+import ShoppingLists from "./pages/ShoppingListsPage";
+import SavedRecipes from "./pages/SavedRecipesPage";
 import RecipeGenerationPage from "./pages/RecipeGenerationPage";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import AboutUs from "./components/AboutUs/AboutUs";
-import ManageAccount from "./components/ManageAccount/ManageAccount";
+import Login from "./pages/LoginPage";
+import Register from "./pages/RegisterPage";
+import AboutUs from "./components/AboutUs";
+import ManageAccount from "./components/ManageAccount";
 
 import { AuthProvider } from "./context/AuthContext";
 
@@ -17,7 +17,6 @@ import LandingPage from "./pages/LandingPage";
 
 function App() {
   return (
-    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -32,7 +31,6 @@ function App() {
           <Route path="/manage-account" element={<ManageAccount />} />
         </Routes>
       </Router>
-    </AuthProvider>
   );
 }
 
