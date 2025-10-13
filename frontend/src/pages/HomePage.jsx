@@ -45,7 +45,8 @@ function HomePage() {
               initial="initial"
               whileInView="animate"
               viewport={{ once: true }}
-              className="font-imprima text-white text-base md:text-lg lg:text-xl tracking-widest mt-6 md:mt-8 max-w-3xl mx-auto"
+              className="font-imprima text-base md:text-lg lg:text-xl tracking-widest mt-6 md:mt-8 max-w-3xl mx-auto"
+              style={{ color: 'var(--muted)' }}
             >
               Organize your meal planning and shopping with ease.
             </motion.p>
@@ -56,17 +57,17 @@ function HomePage() {
               viewport={{ once: true }}
               className="mt-10 md:mt-12 flex flex-col sm:flex-row items-center justify-center gap-4"
             >
-              <Link to="/recipes" className="inline-flex items-center justify-center font-kalnia text-lg md:text-xl text-white border-2 border-white px-8 py-4 hover:scale-105 transition-transform duration-200">
+              <Link to="/recipes" className="inline-flex items-center justify-center font-kalnia text-lg md:text-xl px-8 py-4 hover:scale-105 transition-transform duration-200" style={{ background: 'var(--accent)', color: '#fff' }}>
                 Browse Recipes
               </Link>
-              <Link to="/shopping-lists" className="inline-flex items-center justify-center font-kalnia text-lg md:text-xl text-white border-2 border-white px-8 py-4 hover:scale-105 transition-transform duration-200">
+              <Link to="/shopping-lists" className="inline-flex items-center justify-center font-kalnia text-lg md:text-xl px-8 py-4 hover:scale-105 transition-transform duration-200" style={{ border: '1px solid rgba(255,255,255,0.06)', color: 'var(--text)' }}>
                 Your Shopping Lists
               </Link>
             </motion.div>
           </div>
         </section>
 
-        <section className="min-h-screen w-full flex items-center justify-center bg-black/50 backdrop-blur-md p-6 sm:p-8">
+  <section className="min-h-screen w-full flex items-center justify-center bg-card backdrop-blur-md p-6 sm:p-8">
           <div className="w-full max-w-screen-xl mx-auto">
             <motion.h2 
               variants={fadeIn('down', 0.2)}
@@ -90,9 +91,10 @@ function HomePage() {
                   initial="initial"
                   whileInView="animate"
                   viewport={{ once: true }}
-                  className="bg-black/30 backdrop-blur-sm p-6 rounded-lg border border-white/20"
+                  className="p-6 rounded-lg border"
+                  style={{ background: 'rgba(255,255,255,0.02)', borderColor: 'rgba(255,255,255,0.04)', color: 'var(--text)' }}
                 >
-                  <p className="font-imprima text-white text-lg md:text-xl">{feature}</p>
+                  <p className="font-imprima text-lg md:text-xl" style={{ color: 'var(--muted)' }}>{feature}</p>
                 </motion.div>
               ))}
             </div>
@@ -115,7 +117,8 @@ function HomePage() {
               initial="initial"
               whileInView="animate"
               viewport={{ once: true }}
-              className="font-imprima text-white text-base md:text-lg mt-8 max-w-4xl mx-auto leading-relaxed md:leading-loose tracking-wider"
+              className="font-imprima text-base md:text-lg mt-8 max-w-4xl mx-auto leading-relaxed md:leading-loose tracking-wider"
+              style={{ color: 'var(--muted)' }}
             >
               Our app simplifies meal planning by combining recipe management and shopping list generation in one powerful, easy to use tool.
             </motion.p>

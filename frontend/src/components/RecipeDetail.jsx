@@ -4,12 +4,13 @@ const RecipeDetail = ({ recipe, onClose }) => {
   if (!recipe) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center p-4 z-50">
-      <div className="bg-white rounded-lg max-w-3xl w-full max-h-full overflow-auto p-6 relative">
+    <div className="fixed inset-0 flex justify-center items-center p-4 z-50" style={{ background: 'rgba(0,0,0,0.5)' }}>
+      <div className="rounded-lg max-w-3xl w-full max-h-full overflow-auto p-6 relative" style={{ background: 'var(--card)', color: 'var(--text)' }}>
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
+          className="absolute top-4 right-4"
           aria-label="Close"
+          style={{ color: 'var(--muted)', background: 'transparent', border: 'none' }}
         >
           ✕
         </button>
@@ -20,13 +21,13 @@ const RecipeDetail = ({ recipe, onClose }) => {
           className="w-full h-64 object-cover rounded mb-4"
         />
         <h3 className="text-xl font-semibold mb-2">Ingredients</h3>
-        <ul className="list-disc list-inside mb-4">
+        <ul className="list-disc list-inside mb-4" style={{ color: 'var(--muted)' }}>
           {(recipe.ingredients || []).map((ing, idx) => (
-            <li key={idx} className="text-gray-700">{ing}</li>
+            <li key={idx}>{ing}</li>
           ))}
         </ul>
         <h3 className="text-xl font-semibold mb-2">Instructions</h3>
-        <p className="whitespace-pre-line text-gray-700">{recipe.instructions}</p>
+        <p className="whitespace-pre-line" style={{ color: 'var(--muted)' }}>{recipe.instructions}</p>
       </div>
     </div>
   );

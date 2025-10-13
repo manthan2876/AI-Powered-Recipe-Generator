@@ -22,32 +22,37 @@ function ShoppingListDetail({ list, onClose, onUpdated }) {
   };
 
   return (
-    <div className="detail-modal">
-      <button onClick={onClose}>Close</button>
-      <h2>{list.name}</h2>
-      <ul>
+    <div className="detail-modal p-6 rounded" style={{ background: 'var(--card)', color: 'var(--text)' }}>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-semibold">{list.name}</h2>
+        <button onClick={onClose} className="text-sm" style={{ color: 'var(--muted)', background: 'transparent', border: 'none' }}>Close</button>
+      </div>
+      <ul className="mb-4" style={{ color: 'var(--muted)' }}>
         {list.items.map(item => (
-          <li key={item._id}>
-            {item.ingredient} - {item.quantity}
-            <button onClick={() => handleDeleteItem(item._id)}>Delete</button>
-            {/* Optionally add update/edit functionality here */}
+          <li key={item._id} className="flex items-center justify-between py-1">
+            <span>{item.ingredient} - {item.quantity}</span>
+            <button onClick={() => handleDeleteItem(item._id)} className="text-sm" style={{ color: 'var(--accent)', background: 'transparent', border: 'none' }}>Delete</button>
           </li>
         ))}
       </ul>
-      <form onSubmit={handleAddItem}>
+      <form onSubmit={handleAddItem} className="flex gap-2">
         <input
           value={itemForm.ingredient}
           onChange={e => setItemForm(f => ({ ...f, ingredient: e.target.value }))}
           placeholder="Ingredient"
           required
+          className="flex-1 p-2 rounded"
+          style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.04)', color: 'var(--text)' }}
         />
         <input
           value={itemForm.quantity}
           onChange={e => setItemForm(f => ({ ...f, quantity: e.target.value }))}
           placeholder="Quantity"
           required
+          className="w-32 p-2 rounded"
+          style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.04)', color: 'var(--text)' }}
         />
-        <button type="submit">Add Item</button>
+        <button type="submit" className="px-3 py-2 rounded" style={{ background: 'var(--accent)', color: '#fff' }}>Add</button>
       </form>
     </div>
   );

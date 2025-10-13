@@ -1,8 +1,7 @@
 import React, { createContext, useEffect, useState } from "react";
+import { getCurrentUser, logout as apiLogout } from "../services/auth";
 
 export const AuthContext = createContext(null);
-
-const API_BASE = "http://localhost:5000";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -12,15 +11,8 @@ export function AuthProvider({ children }) {
     async function fetchCurrentUser() {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE}/api/auth/current`, {
-          credentials: "include",
-        });
-        if (res.ok) {
-          const data = await res.json();
-          setUser(data.user || null);
-        } else {
-          setUser(null);
-        }
+        const data = await getCurrentUser();
+        setUser(data || null);
       } catch {
         setUser(null);
       } finally {
@@ -34,10 +26,7 @@ export function AuthProvider({ children }) {
 
   const logoutUser = async () => {
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, {
-        method: "POST",
-        credentials: "include",
-      });
+      await apiLogout();
     } catch {
       // ignore errors
     }

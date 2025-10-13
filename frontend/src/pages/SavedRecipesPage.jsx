@@ -82,7 +82,8 @@ const SavedRecipes = () => {
           {recipes.length === 0 ? (
             <motion.p 
               variants={fadeIn('up', 0.4)}
-              className="text-center text-white/80 font-imprima text-lg md:text-xl"
+              className="text-center font-imprima text-lg md:text-xl"
+              style={{ color: 'var(--muted)' }}
             >
               No saved recipes yet.
             </motion.p>

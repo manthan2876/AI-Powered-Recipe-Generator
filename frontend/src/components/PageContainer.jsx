@@ -34,7 +34,7 @@ export const staggerContainer = {
 
 const PageContainer = ({ children, className = '', mainClassName = 'landing_main' }) => {
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ background: 'var(--bg)', color: 'var(--text)' }}>
       <Header />
       <main className={`flex-grow ${mainClassName} ${className}`}>
         {children}

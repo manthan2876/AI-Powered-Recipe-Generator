@@ -1,15 +1,22 @@
 import { API_BASE } from "./apiConfig";
 
-export async function generateRecipe(ingredientsText) {
-  const response = await fetch(`${API_BASE}/api/recipe-generation/generate`, {
+// ingredientsText can be a string (comma separated) or an array
+export async function generateRecipe(ingredientsInput) {
+  const payload = Array.isArray(ingredientsInput)
+    ? { ingredients: ingredientsInput }
+    : { ingredients: (ingredientsInput || '').split(',').map(i => i.trim()).filter(Boolean) };
+
+  const response = await fetch(`${API_BASE}/api/recipes/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ ingredients: ingredientsText }),
+    credentials: 'include',
+    body: JSON.stringify(payload),
   });
 
   if (!response.ok) {
-    throw new Error("Generation failed");
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.message || "Generation failed");
   }
 
-  return response.json(); // Expected: {title, ingredients[], instructions}
+  return response.json(); // Expected: created recipe object
 }

@@ -139,19 +139,20 @@ export default function RecipesPage() {
         <main className="flex-grow landing_main">
           <div className="flex flex-col md:flex-row min-h-screen">
             {/* Mobile Sidebar Toggle Button */}
-            <motion.button
+              <motion.button
               variants={fadeIn("right", 0.1)}
               initial="initial"
               animate="animate"
-              className="md:hidden fixed top-20 left-4 z-50 bg-black/70 backdrop-blur-md p-3 rounded-full border border-white/20"
+              className="md:hidden fixed top-20 left-4 z-50 p-3 rounded-full border"
               onClick={toggleMobileSidebar}
             >
-              <svg
+                <svg
                 xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6 text-white"
+                className="h-6 w-6"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
+                style={{ color: 'var(--muted)' }}
               >
                 <path
                   strokeLinecap="round"
@@ -168,8 +169,8 @@ export default function RecipesPage() {
               initial="initial"
               animate="animate"
               className={`${
-                isMobileSidebarOpen ? "fixed inset-0 z-40" : "hidden"
-              } md:relative md:block md:w-80 bg-black/70 backdrop-blur-md p-6 border-r border-white/20 overflow-y-auto`}
+                  isMobileSidebarOpen ? "fixed inset-0 z-40" : "hidden"
+                } md:relative md:block md:w-80 p-6 border-r overflow-y-auto`}
             >
               <motion.div
                 variants={fadeIn("down", 0.3)}
@@ -178,13 +179,14 @@ export default function RecipesPage() {
                 <h2 className="text-gradient-1 font-commissioner text-2xl font-bold tracking-wider">
                   Pantry
                 </h2>
-                <span className="text-white font-imprima">
+                <span className="font-imprima text-muted">
                   {selectedPantry.length} Ingredients
                 </span>
                 {/* Close button for mobile */}
                 <button
-                  className="md:hidden text-white"
+                  className="md:hidden"
                   onClick={toggleMobileSidebar}
+                  style={{ color: 'var(--muted)' }}
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -203,17 +205,18 @@ export default function RecipesPage() {
                 </button>
               </motion.div>
 
-              <motion.div variants={fadeIn("up", 0.4)}>
+                <motion.div variants={fadeIn("up", 0.4)}>
                 <input
                   type="text"
                   placeholder="Add/remove/paste ingredients"
-                  className="w-full mb-6 px-4 py-3 bg-black/50 border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+                  className="w-full mb-6 input"
                 />
               </motion.div>
 
               <motion.p
-                variants={fadeIn("right", 0.5)}
-                className="mb-3 font-commissioner text-white text-lg tracking-wider"
+                variants={fadeIn('right', 0.5)}
+                className="mb-3 font-commissioner text-lg tracking-wider"
+                style={{ color: 'var(--text)' }}
               >
                 Pantry Essentials
               </motion.p>
@@ -230,8 +233,8 @@ export default function RecipesPage() {
                     whileTap={{ scale: 0.95 }}
                     className={`px-3 py-2 rounded-lg text-sm font-imprima transition-all duration-200 ${
                       selectedPantry.includes(ingredient)
-                        ? "bg-white text-black"
-                        : "bg-black/30 border border-white/20 text-white hover:bg-white/20"
+                        ? "bg-card text-main"
+                        : "bg-card border text-muted"
                     }`}
                     onClick={() => handleIngredientToggle(ingredient)}
                   >
@@ -240,11 +243,11 @@ export default function RecipesPage() {
                 ))}
               </motion.div>
 
-              <div className="mt-8 mb-4 p-3 rounded bg-black bg-opacity-40 text-xs text-gray-400">
+              <div className="mt-8 mb-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--muted)' }}>
                 The only ingredients we assume you have are{" "}
-                <span className="text-gray-200">salt</span>,{" "}
-                <span className="text-gray-200">pepper</span> and{" "}
-                <span className="text-gray-200">water</span>.
+                <span style={{ color: 'var(--text)' }}>salt</span>,{" "}
+                <span style={{ color: 'var(--text)' }}>pepper</span> and{" "}
+                <span style={{ color: 'var(--text)' }}>water</span>.
               </div>
             </motion.aside>
 
@@ -264,16 +267,17 @@ export default function RecipesPage() {
                   className="flex flex-wrap gap-2 mb-6"
                 >
                   {filters.map((filter, index) => (
-                    <motion.button
-                      key={filter}
-                      variants={fadeIn("up", 0.2 + index * 0.05)}
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="px-4 py-2 rounded-lg bg-black/30 backdrop-blur-sm border border-white/20 text-white text-sm hover:bg-white/10 transition-all duration-200"
-                    >
-                      {filter}
-                    </motion.button>
-                  ))}
+                      <motion.button
+                        key={filter}
+                        variants={fadeIn("up", 0.2 + index * 0.05)}
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="px-4 py-2 rounded-lg text-sm transition-all duration-200"
+                        style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--text)' }}
+                      >
+                        {filter}
+                      </motion.button>
+                    ))}
                 </motion.div>
 
                 <motion.div variants={fadeIn("up", 0.6)} className="relative">
@@ -282,9 +286,9 @@ export default function RecipesPage() {
                     placeholder="Search recipes..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full px-4 py-3 bg-black/50 border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+                    className="w-full input"
                   />
-                  <span className="absolute right-3 top-3 text-white/70">
+                  <span className="absolute right-3 top-3 text-muted">
                     {/* Search icon */}
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -318,7 +322,7 @@ export default function RecipesPage() {
                       animate="visible"
                       exit="exit"
                       layout
-                      className="bg-black/40 backdrop-blur-md rounded-xl overflow-hidden border border-white/10 hover:border-white/30 transition-all duration-300 hover:shadow-lg hover:shadow-white/5"
+                      className="bg-card glass rounded-xl overflow-hidden border transition-all duration-300"
                     >
                       <RecipeCard
                         recipe={recipe}

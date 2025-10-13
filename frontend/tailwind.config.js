@@ -3,10 +3,14 @@ module.exports = {
         "./index.html",
         "./src/**/*.{js,ts,jsx,tsx}",
     ],
+    darkMode: 'class', // switch to class-based dark mode so we can toggle programmatically
     theme: {
       extend: {
         colors: {
-          primary: '#FF6F61', // soft coral color for brand
+          primary: {
+            DEFAULT: '#FF3B30', // red brand for light/dark accents
+            600: '#cc2a24',
+          },
           secondary: '#4A5568',
         },
         fontFamily: {

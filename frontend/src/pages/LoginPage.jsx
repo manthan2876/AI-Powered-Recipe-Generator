@@ -63,7 +63,7 @@ function LoginPage() {
         variants={fadeIn('up')}
         initial="initial"
         animate="animate"
-        className="w-full max-w-md p-8 md:p-12 space-y-8 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20"
+        className="w-full max-w-md p-8 md:p-12 space-y-8 glass rounded-2xl border"
       >
         <motion.div 
           variants={staggerContainer} 
@@ -74,7 +74,7 @@ function LoginPage() {
           <motion.h2 variants={fadeIn('down')} className="text-gradient-1 font-commissioner text-4xl lg:text-5xl font-bold tracking-wider py-2">
             Login
           </motion.h2>
-          <motion.p variants={fadeIn('down', 0.1)} className="mt-2 text-white/70">
+          <motion.p variants={fadeIn('down', 0.1)} className="mt-2 text-muted">
             Welcome back to your CookCanvas.
           </motion.p>
         </motion.div>
@@ -88,7 +88,7 @@ function LoginPage() {
               value={data.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
           <motion.div variants={fadeIn('up', 0.3)}>
@@ -99,7 +99,7 @@ function LoginPage() {
               value={data.password}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
 
@@ -117,16 +117,16 @@ function LoginPage() {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full font-kalnia text-lg text-white border-2 border-white px-8 py-3 hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-lg"
+              className="w-full font-kalnia text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-lg btn-primary"
             >
               {isLoading ? 'Logging in...' : 'Login'}
             </button>
           </motion.div>
         </form>
 
-        <motion.p variants={fadeIn('up', 0.5)} className="text-center text-white/60">
+        <motion.p variants={fadeIn('up', 0.5)} className="text-center" style={{ color: 'var(--muted)' }}>
           Don't have an account?{' '}
-          <Link to="/register" className="font-bold text-white hover:underline">
+          <Link to="/register" className="font-bold hover:underline" style={{ color: 'var(--accent)' }}>
             Register here
           </Link>
           .

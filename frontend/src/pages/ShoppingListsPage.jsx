@@ -62,13 +62,13 @@ function ShoppingListsPage() {
               placeholder="New list name"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
-              className="w-full sm:w-auto flex-grow px-4 py-3 bg-black/50 backdrop-blur-md border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors font-imprima"
+              className="w-full sm:w-auto flex-grow input font-imprima"
             />
             <motion.button 
               type="submit"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto inline-flex items-center justify-center font-kalnia text-lg text-white border-2 border-white px-6 py-3 hover:scale-105 transition-transform duration-200"
+              className="w-full sm:w-auto inline-flex items-center justify-center font-kalnia text-lg px-6 py-3 hover:scale-105 transition-transform duration-200 btn-primary"
             >
               Add List
             </motion.button>
@@ -80,7 +80,7 @@ function ShoppingListsPage() {
           >
             <motion.div 
               variants={fadeIn('right', 0.4)}
-              className="md:col-span-1 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 p-4 md:p-6"
+              className="md:col-span-1 bg-card glass rounded-xl border p-4 md:p-6"
             >
               <h2 className="text-gradient-2 font-commissioner text-xl font-bold mb-4">Your Lists</h2>
               <ul className="space-y-3">
@@ -99,20 +99,20 @@ function ShoppingListsPage() {
                   </motion.li>
                 ))}
                 {lists.length === 0 && (
-                  <p className="text-white/70 font-imprima text-center py-4">No shopping lists yet</p>
+                  <p className="text-muted font-imprima text-center py-4">No shopping lists yet</p>
                 )}
               </ul>
             </motion.div>
             
             <motion.div 
               variants={fadeIn('left', 0.5)}
-              className="md:col-span-2 bg-black/40 backdrop-blur-md rounded-xl border border-white/20 p-4 md:p-6"
+              className="md:col-span-2 bg-card glass rounded-xl border p-4 md:p-6"
             >
               {activeList ? (
                 <ShoppingListDetail list={activeList} />
               ) : (
                 <div className="h-full flex items-center justify-center">
-                  <p className="text-white/70 font-imprima text-center py-12">Select a shopping list to view details</p>
+                  <p className="text-muted font-imprima text-center py-12">Select a shopping list to view details</p>
                 </div>
               )}
             </motion.div>

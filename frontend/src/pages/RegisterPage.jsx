@@ -69,7 +69,7 @@ export default function RegisterPage() {
         variants={fadeIn('up')}
         initial="initial"
         animate="animate"
-        className="w-full max-w-md p-8 md:p-12 space-y-6 bg-black/40 backdrop-blur-md rounded-2xl border border-white/20"
+        className="w-full max-w-md p-8 md:p-12 space-y-6 glass rounded-2xl border"
       >
         <motion.div 
           variants={staggerContainer} 
@@ -80,7 +80,7 @@ export default function RegisterPage() {
           <motion.h2 variants={fadeIn('down')} className="text-gradient-1 font-commissioner text-4xl lg:text-5xl font-bold tracking-wider">
             Create Account
           </motion.h2>
-          <motion.p variants={fadeIn('down', 0.1)} className="mt-2 text-white/70">
+            <motion.p variants={fadeIn('down', 0.1)} className="mt-2 text-muted">
             Start your culinary journey with us.
           </motion.p>
         </motion.div>
@@ -94,7 +94,7 @@ export default function RegisterPage() {
               value={data.name}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
           <motion.div variants={fadeIn('up', 0.3)}>
@@ -105,7 +105,7 @@ export default function RegisterPage() {
               value={data.email}
               onChange={handleChange}
               required
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
           <motion.div variants={fadeIn('up', 0.4)}>
@@ -117,7 +117,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               minLength={6}
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
           <motion.div variants={fadeIn('up', 0.5)}>
@@ -129,7 +129,7 @@ export default function RegisterPage() {
               onChange={handleChange}
               required
               minLength={6}
-              className="w-full px-4 py-3 bg-transparent border-2 border-white/40 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white transition-colors"
+              className="w-full input"
             />
           </motion.div>
 
@@ -147,16 +147,16 @@ export default function RegisterPage() {
             <button 
               type="submit" 
               disabled={isLoading}
-              className="w-full font-kalnia text-lg text-white border-2 border-white px-8 py-3 hover:bg-white hover:text-black disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-lg"
+              className="w-full font-kalnia text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-lg btn-primary"
             >
               {isLoading ? 'Creating Account...' : 'Register'}
             </button>
           </motion.div>
         </form>
 
-        <motion.p variants={fadeIn('up', 0.7)} className="text-center text-white/60">
+  <motion.p variants={fadeIn('up', 0.7)} className="text-center" style={{ color: 'var(--muted)' }}>
           Already have an account?{' '}
-          <Link to="/login" className="font-bold text-white hover:underline">
+          <Link to="/login" className="font-bold hover:underline" style={{ color: 'var(--accent)' }}>
             Login here
           </Link>
           .
