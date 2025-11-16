@@ -18,6 +18,7 @@ import ProfilePage from "./pages/ProfilePage";
 
 function App() {
   return (
+    <AuthProvider>
       <Router>
         <Routes>
           <Route path="/" element={<LandingPage />} />
@@ -33,6 +34,7 @@ function App() {
           <Route path="/manage-account" element={<ManageAccount />} />
         </Routes>
       </Router>
+    </AuthProvider>
   );
 }
 

@@ -1,28 +1,61 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
-import PageContainer, { fadeIn, staggerContainer } from "../components/PageContainer";
+import React, { useState, useEffect, useContext } from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { AuthContext } from "../context/AuthContext";
+import { getCurrentUser, updateUserProfile } from "../services/auth";
 
-const initialProfile = {
-  name: "Jane Doe",
-  email: "janedoe@email.com",
-  cookingPreferences: "Quick meals, meal prep",
-  dietaryPreferences: "Vegetarian",
-  favoriteCuisines: ["Italian", "Mexican"],
-  allergies: "Peanuts",
-  skillLevel: "Intermediate",
-  bio: "Home cook exploring world flavors.",
-  avatar: "",
-};
-
-const skillLevels = ["Beginner", "Intermediate", "Advanced", "Professional"];
+const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Keto", "Paleo"];
 
 export default function RecipeProfilePage() {
-  const [profile, setProfile] = useState(initialProfile);
+  const { user } = useContext(AuthContext);
+  const [profile, setProfile] = useState({ dietaryPreferences: [] });
   const [editMode, setEditMode] = useState(false);
-  const [form, setForm] = useState(initialProfile);
+  const [form, setForm] = useState({ 
+    currentPassword: "", 
+    newPassword: "", 
+    confirmPassword: "",
+    dietaryPreferences: [] 
+  });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    async function fetchProfile() {
+      try {
+        setLoading(true);
+        const userData = await getCurrentUser();
+        if (userData) {
+          setProfile({
+            dietaryPreferences: userData.dietaryPreferences || []
+          });
+          setForm({ 
+            currentPassword: "", 
+            newPassword: "", 
+            confirmPassword: "",
+            dietaryPreferences: userData.dietaryPreferences || [] 
+          });
+        }
+      } catch (err) {
+        setError("Failed to load profile");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    if (user) {
+      fetchProfile();
+    }
+  }, [user]);
 
   const handleEdit = () => {
-    setForm(profile);
+    setForm({ 
+      currentPassword: "", 
+      newPassword: "", 
+      confirmPassword: "",
+      dietaryPreferences: profile.dietaryPreferences || [] 
+    });
     setEditMode(true);
   };
 
@@ -31,216 +64,404 @@ export default function RecipeProfilePage() {
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCuisineChange = (e, idx) => {
-    const favoriteCuisines = [...form.favoriteCuisines];
-    favoriteCuisines[idx] = e.target.value;
-    setForm((prev) => ({ ...prev, favoriteCuisines }));
-  };
-
-  const addCuisine = () => {
+  const handleDietaryToggle = (diet) => {
     setForm((prev) => ({
       ...prev,
-      favoriteCuisines: [...prev.favoriteCuisines, ""],
+      dietaryPreferences: prev.dietaryPreferences.includes(diet)
+        ? prev.dietaryPreferences.filter((d) => d !== diet)
+        : [...prev.dietaryPreferences, diet],
     }));
   };
 
-  const removeCuisine = (idx) => {
-    setForm((prev) => ({
-      ...prev,
-      favoriteCuisines: prev.favoriteCuisines.filter((_, i) => i !== idx),
-    }));
-  };
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      setError("");
+      setSuccess("");
 
-  const handleSave = () => {
-    setProfile(form);
-    setEditMode(false);
-  };
+      // Validate password change if passwords are provided
+      if (form.newPassword || form.currentPassword) {
+        if (!form.currentPassword) {
+          setError("Please enter your current password");
+          setSaving(false);
+          return;
+        }
+        if (!form.newPassword) {
+          setError("Please enter a new password");
+          setSaving(false);
+          return;
+        }
+        if (form.newPassword.length < 6) {
+          setError("New password must be at least 6 characters long");
+          setSaving(false);
+          return;
+        }
+        if (form.newPassword !== form.confirmPassword) {
+          setError("New password and confirm password do not match");
+          setSaving(false);
+          return;
+        }
+      }
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 60 },
-    visible: { opacity: 1, y: 0, transition: { duration: 0.5, type: "spring" } },
+      const updateData = {
+        dietaryPreferences: form.dietaryPreferences,
+      };
+
+      if (form.currentPassword && form.newPassword) {
+        updateData.currentPassword = form.currentPassword;
+        updateData.newPassword = form.newPassword;
+      }
+
+      const updated = await updateUserProfile(updateData);
+      setProfile({
+        dietaryPreferences: updated.dietaryPreferences || []
+      });
+      setEditMode(false);
+      setSuccess("Profile updated successfully!");
+      setForm({ 
+        currentPassword: "", 
+        newPassword: "", 
+        confirmPassword: "",
+        dietaryPreferences: updated.dietaryPreferences || [] 
+      });
+    } catch (err) {
+      setError(err.message || "Failed to update profile");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
-    <>
-        <Header/>
-        <motion.div
-      className="min-h-screen bg-[#191d24] text-gray-100 px-4 py-8 min-w-[100vw]"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      <div className="max-w-3xl mx-auto bg-[#202430] rounded-2xl shadow-lg p-8">
-        <div className="flex items-center space-x-6 mb-8">
-          <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-green-500 to-lime-400 flex items-center justify-center text-2xl font-bold">
-            {profile.avatar
-              ? <img src={profile.avatar} alt="avatar" className="rounded-full w-full h-full object-cover" />
-              : profile.name.split(" ").map((s) => s[0]).join("")}
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">{profile.name}</h2>
-            <p className="text-gray-400">{profile.email}</p>
-          </div>
-          <button
-            onClick={handleEdit}
-            className="ml-auto bg-green-500 text-black px-5 py-2 rounded-full font-semibold hover:bg-green-400 transition"
-            disabled={editMode}
-          >
-            Edit
-          </button>
-        </div>
-        <form
-          className={`grid grid-cols-1 md:grid-cols-2 gap-6 ${editMode ? "opacity-80" : ""}`}
-          onSubmit={(e) => {
-            e.preventDefault();
-            handleSave();
-          }}
-        >
-          <ProfileField
-            label="Cooking Preferences"
-            value={profile.cookingPreferences}
-            editMode={editMode}
-            formValue={form.cookingPreferences}
-            name="cookingPreferences"
-            onChange={handleChange}
-          />
-          <ProfileField
-            label="Dietary Preferences"
-            value={profile.dietaryPreferences}
-            editMode={editMode}
-            formValue={form.dietaryPreferences}
-            name="dietaryPreferences"
-            onChange={handleChange}
-          />
-          <div>
-            <label className="block uppercase text-xs font-medium text-gray-400 mb-1">Favorite Cuisines</label>
-            {editMode ? (
-              <div>
-                {form.favoriteCuisines.map((c, idx) => (
-                  <div key={idx} className="flex items-center mb-1">
-                    <input
-                      className="bg-[#262a36] border border-gray-700 text-gray-100 px-3 py-2 rounded w-full mr-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                      value={c}
-                      onChange={(e) => handleCuisineChange(e, idx)}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeCuisine(idx)}
-                      className="text-red-400 hover:text-red-300 px-2"
-                      aria-label="Remove Cuisine"
-                    >
-                      &times;
-                    </button>
-                  </div>
-                ))}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{
+        flex: 1,
+        padding: '40px 20px',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          maxWidth: '800px',
+          margin: '0 auto',
+          backgroundColor: '#ffffff',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+          padding: '40px'
+        }}>
+          {loading ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>Loading profile...</p>
+          ) : !user ? (
+            <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>Please log in to view your profile.</p>
+          ) : (
+            <>
+              {error && (
+                <div style={{
+                  color: '#ff4444',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  fontSize: '14px',
+                  padding: '12px',
+                  backgroundColor: '#ffebee',
+                  borderRadius: '4px'
+                }}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div style={{
+                  color: '#4caf50',
+                  textAlign: 'center',
+                  marginBottom: '20px',
+                  fontSize: '14px',
+                  padding: '12px',
+                  backgroundColor: '#e8f5e9',
+                  borderRadius: '4px'
+                }}>
+                  {success}
+                </div>
+              )}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '20px',
+                marginBottom: '30px',
+                paddingBottom: '20px',
+                borderBottom: '1px solid #e0e0e0'
+              }}>
+                <div style={{
+                  width: '80px',
+                  height: '80px',
+                  borderRadius: '50%',
+                  backgroundColor: '#4caf50',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#ffffff',
+                  fontSize: '24px',
+                  fontWeight: 'bold'
+                }}>
+                  U
+                </div>
+                <div style={{ flex: 1 }}>
+                  <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                    Profile Settings
+                  </h2>
+                  <p style={{ fontSize: '14px', color: '#666' }}>Manage your password and dietary preferences</p>
+                </div>
                 <button
-                  type="button"
-                  onClick={addCuisine}
-                  className="mt-2 text-sm bg-[#262a36] px-3 py-1 rounded text-green-400 hover:bg-[#22262f]"
+                  onClick={handleEdit}
+                  disabled={editMode}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: editMode ? '#cccccc' : '#4caf50',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    cursor: editMode ? 'not-allowed' : 'pointer',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!editMode) {
+                      e.target.style.backgroundColor = '#45a049';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!editMode) {
+                      e.target.style.backgroundColor = '#4caf50';
+                    }
+                  }}
                 >
-                  Add Cuisine
+                  Edit
                 </button>
               </div>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {profile.favoriteCuisines.map((c, idx) => (
-                  <span key={idx} className="bg-green-600 bg-opacity-20 text-green-300 px-3 py-1 rounded-full text-xs">{c}</span>
-                ))}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSave();
+            }}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '20px'
+            }}
+          >
+            {/* Password Change Section */}
+            <div style={{
+              padding: '20px',
+              backgroundColor: '#f9f9f9',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#333', marginBottom: '16px' }}>
+                Change Password
+              </h3>
+              {editMode ? (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  <ProfileField
+                    label="Current Password"
+                    editMode={true}
+                    formValue={form.currentPassword}
+                    name="currentPassword"
+                    type="password"
+                    onChange={handleChange}
+                  />
+                  <ProfileField
+                    label="New Password"
+                    editMode={true}
+                    formValue={form.newPassword}
+                    name="newPassword"
+                    type="password"
+                    onChange={handleChange}
+                  />
+                  <ProfileField
+                    label="Confirm New Password"
+                    editMode={true}
+                    formValue={form.confirmPassword}
+                    name="confirmPassword"
+                    type="password"
+                    onChange={handleChange}
+                  />
+                </div>
+              ) : (
+                <p style={{ fontSize: '14px', color: '#666' }}>
+                  Click Edit to change your password
+                </p>
+              )}
+            </div>
+
+            {/* Dietary Preferences Section */}
+            <div style={{
+              padding: '20px',
+              backgroundColor: '#f9f9f9',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0'
+            }}>
+              <h3 style={{ fontSize: '18px', fontWeight: '600', color: '#333', marginBottom: '16px' }}>
+                Dietary Preferences
+              </h3>
+              {editMode ? (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {dietaryOptions.map((diet) => {
+                    const isSelected = form.dietaryPreferences.includes(diet);
+                    return (
+                      <button
+                        key={diet}
+                        type="button"
+                        onClick={() => handleDietaryToggle(diet)}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          border: '2px solid #4caf50',
+                          backgroundColor: isSelected ? '#4caf50' : '#ffffff',
+                          color: isSelected ? '#ffffff' : '#4caf50',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!isSelected) {
+                            e.target.style.backgroundColor = '#f0f9f0';
+                          }
+                        }}
+                        onMouseLeave={(e) => {
+                          if (!isSelected) {
+                            e.target.style.backgroundColor = '#ffffff';
+                          }
+                        }}
+                      >
+                        {diet}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                  {profile.dietaryPreferences && profile.dietaryPreferences.length > 0 ? (
+                    profile.dietaryPreferences.map((diet) => (
+                      <span
+                        key={diet}
+                        style={{
+                          padding: '8px 16px',
+                          borderRadius: '4px',
+                          fontSize: '14px',
+                          fontWeight: '500',
+                          backgroundColor: '#e8f5e9',
+                          color: '#2e7d32'
+                        }}
+                      >
+                        {diet}
+                      </span>
+                    ))
+                  ) : (
+                    <p style={{ fontSize: '14px', color: '#666' }}>
+                      No dietary preferences set. Click Edit to add preferences.
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
+            {editMode && (
+              <div style={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: '12px',
+                marginTop: '20px'
+              }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditMode(false);
+                    setForm({ 
+                      currentPassword: "", 
+                      newPassword: "", 
+                      confirmPassword: "",
+                      dietaryPreferences: profile.dietaryPreferences || [] 
+                    });
+                    setError("");
+                    setSuccess("");
+                  }}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: '#f0f0f0',
+                    color: '#333',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={saving}
+                  style={{
+                    padding: '10px 20px',
+                    backgroundColor: saving ? '#cccccc' : '#4caf50',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: saving ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'background-color 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!saving) {
+                      e.target.style.backgroundColor = '#45a049';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!saving) {
+                      e.target.style.backgroundColor = '#4caf50';
+                    }
+                  }}
+                >
+                  {saving ? 'Saving...' : 'Save'}
+                </button>
               </div>
             )}
-          </div>
-          <ProfileField
-            label="Allergies"
-            value={profile.allergies}
-            editMode={editMode}
-            formValue={form.allergies}
-            name="allergies"
-            onChange={handleChange}
-          />
-          <div>
-            <label className="block uppercase text-xs font-medium text-gray-400 mb-1">Skill Level</label>
-            {editMode ? (
-              <select
-                className="bg-[#262a36] border border-gray-700 text-gray-100 px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
-                name="skillLevel"
-                value={form.skillLevel}
-                onChange={handleChange}
-              >
-                {skillLevels.map(lvl => (
-                  <option key={lvl} value={lvl}>{lvl}</option>
-                ))}
-              </select>
-            ) : (
-              <div className="bg-[#262a36] text-gray-200 px-4 py-2 rounded">{profile.skillLevel}</div>
-            )}
-          </div>
-          <ProfileField
-            label="Bio"
-            value={profile.bio}
-            editMode={editMode}
-            formValue={form.bio}
-            name="bio"
-            onChange={handleChange}
-            type="textarea"
-          />
-          {editMode && (
-            <div className="md:col-span-2 flex justify-end gap-3 mt-4">
-              <button
-                type="button"
-                className="bg-[#262a36] text-gray-400 px-6 py-2 rounded-full hover:bg-[#202430] transition"
-                onClick={() => setEditMode(false)}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="bg-green-500 text-black px-6 py-2 rounded-full hover:bg-green-400 transition font-semibold"
-              >
-                Save
-              </button>
-            </div>
+          </form>
+            </>
           )}
-        </form>
-      </div>
-    </motion.div>
-    </>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }
 
-function ProfileField({ label, value, editMode, formValue, onChange, name, type }) {
-  if (!editMode) {
-    return (
-      <div>
-        <label className="block uppercase text-xs font-medium text-gray-400 mb-1">{label}</label>
-        <div className="bg-[#262a36] text-gray-200 px-4 py-2 rounded">{value}</div>
-      </div>
-    );
-  }
-
-  if (type === "textarea") {
-    return (
-      <div>
-        <label className="block uppercase text-xs font-medium text-gray-400 mb-1">{label}</label>
-        <textarea
-          name={name}
-          rows={3}
-          className="bg-[#262a36] border border-gray-700 text-gray-100 px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
-          value={formValue}
-          onChange={onChange}
-        />
-      </div>
-    );
-  }
-
+function ProfileField({ label, editMode, formValue, onChange, name, type = "text" }) {
   return (
     <div>
-      <label className="block uppercase text-xs font-medium text-gray-400 mb-1">{label}</label>
+      <label style={{
+        display: 'block',
+        fontSize: '12px',
+        fontWeight: '500',
+        color: '#666',
+        marginBottom: '8px',
+        textTransform: 'uppercase'
+      }}>
+        {label}
+      </label>
       <input
-        type="text"
+        type={type}
         name={name}
-        className="bg-[#262a36] border border-gray-700 text-gray-100 px-3 py-2 rounded w-full focus:outline-none focus:ring-2 focus:ring-green-500"
+        style={{
+          width: '100%',
+          padding: '10px',
+          border: '1px solid #e0e0e0',
+          borderRadius: '4px',
+          fontSize: '14px',
+          outline: 'none'
+        }}
         value={formValue}
         onChange={onChange}
+        onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+        onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
       />
     </div>
   );

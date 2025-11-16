@@ -1,5 +1,6 @@
 import asyncHandler from 'express-async-handler';
 import Recipe from '../models/recipeModel.js';
+import User from '../models/userModel.js';
 import axios from 'axios';
 
 // @desc    Fetch all recipes
@@ -30,10 +31,20 @@ const getRecipes = asyncHandler(async (req, res) => {
 // @route   GET /api/recipes/:id
 // @access  Public
 const getRecipeById = asyncHandler(async (req, res) => {
-  const recipe = await Recipe.findById(req.params.id);
+  const recipe = await Recipe.findById(req.params.id).populate('reviews.user', 'name');
 
   if (recipe) {
-    res.json(recipe);
+    // Check if user has saved this recipe (if authenticated)
+    let isSaved = false;
+    if (req.user && req.user._id) {
+      const user = await User.findById(req.user._id);
+      if (user && user.savedRecipes) {
+        isSaved = user.savedRecipes.some(
+          (id) => id.toString() === recipe._id.toString()
+        );
+      }
+    }
+    res.json({ ...recipe.toObject(), isSaved });
   } else {
     res.status(404);
     throw new Error('Recipe not found');
@@ -245,25 +256,140 @@ const generateRecipe = asyncHandler(async (req, res) => {
 // @route   GET /api/recipes/search
 // @access  Public
 const searchRecipesByIngredients = asyncHandler(async (req, res) => {
-  const { ingredients, limit } = req.query;
+  const { 
+    ingredients, 
+    limit,
+    cuisine,
+    dietaryRestrictions,
+    minRating,
+    maxTotalTime,
+    excludeIngredients,
+    difficulty,
+    isGenerated
+  } = req.query;
 
   // Make ingredients optional
   const ingredientList = ingredients 
-    ? ingredients.split(',').map((ing) => ing.trim()).filter(Boolean)
+    ? ingredients.split(',').map((ing) => ing.trim().toLowerCase()).filter(Boolean)
+    : [];
+  const excludeList = excludeIngredients
+    ? excludeIngredients.split(',').map((ing) => ing.trim().toLowerCase()).filter(Boolean)
     : [];
   const pageLimit = Math.min(parseInt(limit || '12', 10), 50);
 
-  // First try local MongoDB search for recipes containing ALL provided ingredients
-  // Fallback to external retrieval API if configured
+  // Build query object
+  const query = {};
+  const andConditions = [];
+
+  // Ingredient matching - use $or for partial matching (recipes that contain any of the selected ingredients)
+  if (ingredientList.length > 0) {
+    // Match recipes that contain at least one of the selected ingredients
+    andConditions.push({
+      $or: ingredientList.map(ing => ({
+        ingredients: { $regex: ing, $options: 'i' }
+      }))
+    });
+  }
+
+  // Exclude ingredients
+  if (excludeList.length > 0) {
+    andConditions.push({
+      ingredients: {
+        $nin: excludeList.map(ing => new RegExp(ing, 'i'))
+      }
+    });
+  }
+
+  // Combine conditions with $and if we have multiple conditions
+  if (andConditions.length > 0) {
+    if (andConditions.length === 1) {
+      Object.assign(query, andConditions[0]);
+    } else {
+      query.$and = andConditions;
+    }
+  }
+
+  // Filter by cuisine
+  if (cuisine) {
+    query.cuisine = { $regex: cuisine, $options: 'i' };
+  }
+
+  // Filter by dietary restrictions
+  if (dietaryRestrictions) {
+    const restrictions = dietaryRestrictions.split(',').map(r => r.trim());
+    query.dietaryRestrictions = { $in: restrictions.map(r => new RegExp(r, 'i')) };
+  }
+
+  // Filter by minimum rating
+  if (minRating) {
+    query.rating = { $gte: parseFloat(minRating) };
+  }
+
+  // Filter by max total time (prep + cook)
+  if (maxTotalTime) {
+    const maxTime = parseInt(maxTotalTime);
+    query.$expr = {
+      $lte: [
+        { $add: [{ $ifNull: ['$prepTime', 0] }, { $ifNull: ['$cookTime', 0] }] },
+        maxTime
+      ]
+    };
+  }
+
+  // Filter by difficulty
+  if (difficulty) {
+    query.difficulty = difficulty;
+  }
+
+  // Filter by AI or Human (isGenerated)
+  if (isGenerated !== undefined && isGenerated !== null && isGenerated !== '') {
+    query.isGenerated = isGenerated === 'true' || isGenerated === true;
+  }
+
+  // First try local MongoDB search
   try {
-    // If no ingredients provided, return random recipes
-    const query = ingredientList.length > 0 
-      ? { ingredients: { $all: ingredientList } }
-      : {};
-      
-    const mongoResults = await Recipe.find(query)
-      .limit(pageLimit)
-      .select('-reviews');
+    let mongoResults = await Recipe.find(query)
+      .select('-reviews')
+      .limit(pageLimit * 2); // Get more results for sorting
+
+
+    // Calculate ingredient match count for each recipe
+    if (ingredientList.length > 0) {
+      mongoResults = mongoResults.map(recipe => {
+        const recipeIngredients = (recipe.ingredients || []).map(ing => ing.toLowerCase());
+        const matchCount = ingredientList.filter(selectedIng => 
+          recipeIngredients.some(recipeIng => recipeIng.includes(selectedIng))
+        ).length;
+        return {
+          ...recipe.toObject(),
+          ingredientMatch: matchCount
+        };
+      });
+
+      // Sort by ingredient match count (descending)
+      mongoResults.sort((a, b) => (b.ingredientMatch || 0) - (a.ingredientMatch || 0));
+    }
+
+    // Limit results
+    mongoResults = mongoResults.slice(0, pageLimit);
+
+    // Add isSaved status for authenticated users
+    if (req.user && req.user._id) {
+      const user = await User.findById(req.user._id);
+      if (user && user.savedRecipes) {
+        const savedRecipeIds = user.savedRecipes.map(id => id.toString());
+        mongoResults = mongoResults.map(recipe => ({
+          ...recipe,
+          isSaved: savedRecipeIds.includes(recipe._id.toString())
+        }));
+      }
+    } else {
+      // For non-authenticated users, set isSaved to false
+      mongoResults = mongoResults.map(recipe => ({
+        ...recipe,
+        isSaved: false
+      }));
+    }
 
     if (mongoResults && mongoResults.length) {
       return res.json(mongoResults);
@@ -288,28 +414,85 @@ const searchRecipesByIngredients = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Toggle favorite recipe
+// @desc    Toggle favorite recipe (save/unsave recipe for user)
 // @route   PUT /api/recipes/:id/favorite
 // @access  Private
 const toggleFavoriteRecipe = asyncHandler(async (req, res) => {
   const recipe = await Recipe.findById(req.params.id);
 
-  if (recipe) {
-    recipe.isFavorite = !recipe.isFavorite;
-    const updatedRecipe = await recipe.save();
-    res.json(updatedRecipe);
-  } else {
+  if (!recipe) {
     res.status(404);
     throw new Error('Recipe not found');
   }
+
+  const user = await User.findById(req.user._id);
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+
+  const recipeId = recipe._id.toString();
+  const isSaved = user.savedRecipes.includes(recipeId);
+
+  if (isSaved) {
+    // Remove from saved recipes
+    user.savedRecipes = user.savedRecipes.filter(
+      (id) => id.toString() !== recipeId
+    );
+  } else {
+    // Add to saved recipes
+    user.savedRecipes.push(recipeId);
+  }
+
+  await user.save();
+  res.json({ isSaved: !isSaved, recipe });
 });
 
 // @desc    Get user's favorite recipes
 // @route   GET /api/recipes/favorites
 // @access  Private
 const getFavoriteRecipes = asyncHandler(async (req, res) => {
-  const recipes = await Recipe.find({ user: req.user._id, isFavorite: true });
-  res.json(recipes);
+  const user = await User.findById(req.user._id).populate('savedRecipes');
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found');
+  }
+  res.json(user.savedRecipes || []);
+});
+
+// @desc    Get all unique ingredients from database
+// @route   GET /api/recipes/ingredients
+// @access  Public
+const getAllIngredients = asyncHandler(async (req, res) => {
+  try {
+    const recipes = await Recipe.find({}, 'ingredients');
+    const allIngredients = new Set();
+    
+    recipes.forEach(recipe => {
+      if (recipe.ingredients && Array.isArray(recipe.ingredients)) {
+        recipe.ingredients.forEach(ingredient => {
+          // Extract ingredient name (remove quantities/units)
+          // Handle formats like "2 cups flour" or "flour" or "1 tsp salt"
+          const cleaned = ingredient
+            .replace(/^[\d./\s]+(cup|cups|tsp|tbsp|tablespoon|teaspoon|oz|ounce|lb|pound|g|gram|kg|kilogram|ml|milliliter|l|liter|piece|pieces|clove|cloves|slice|slices|can|cans|package|packages)\s+/i, '')
+            .replace(/^[\d./\s]+/, '')
+            .trim()
+            .toLowerCase();
+          
+          if (cleaned) {
+            allIngredients.add(cleaned);
+          }
+        });
+      }
+    });
+    
+    const sortedIngredients = Array.from(allIngredients).sort();
+    res.json(sortedIngredients);
+  } catch (error) {
+    console.error('Error fetching ingredients:', error);
+    res.status(500);
+    throw new Error('Failed to fetch ingredients');
+  }
 });
 
 export {
@@ -324,4 +507,5 @@ export {
   searchRecipesByIngredients,
   toggleFavoriteRecipe,
   getFavoriteRecipes,
+  getAllIngredients,
 };

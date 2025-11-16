@@ -6,53 +6,170 @@ function ShoppingListDetail({ list, onClose, onUpdated }) {
 
   const handleAddItem = async (e) => {
     e.preventDefault();
-    await addShoppingListItem(list._id, itemForm);
-    setItemForm({ ingredient: "", quantity: "" });
-    onUpdated();
+    try {
+      await addShoppingListItem(list._id || list.id, itemForm);
+      setItemForm({ ingredient: "", quantity: "" });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      console.error('Error adding item:', err);
+    }
   };
 
   const handleUpdateItem = async (itemId, ingredient, quantity) => {
-    await updateShoppingListItem(list._id, itemId, { ingredient, quantity });
-    onUpdated();
+    try {
+      await updateShoppingListItem(list._id || list.id, itemId, { ingredient, quantity });
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      console.error('Error updating item:', err);
+    }
   };
 
   const handleDeleteItem = async (itemId) => {
-    await deleteShoppingListItem(list._id, itemId);
-    onUpdated();
+    try {
+      await deleteShoppingListItem(list._id || list.id, itemId);
+      if (onUpdated) onUpdated();
+    } catch (err) {
+      console.error('Error deleting item:', err);
+    }
   };
 
   return (
-    <div className="detail-modal p-6 rounded" style={{ background: 'var(--card)', color: 'var(--text)' }}>
-      <div className="flex items-center justify-between mb-4">
-        <h2 className="text-lg font-semibold">{list.name}</h2>
-        <button onClick={onClose} className="text-sm" style={{ color: 'var(--muted)', background: 'transparent', border: 'none' }}>Close</button>
+    <div>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '20px',
+        paddingBottom: '16px',
+        borderBottom: '1px solid #e0e0e0'
+      }}>
+        <h2 style={{
+          fontSize: '20px',
+          fontWeight: '600',
+          color: '#333',
+          margin: 0
+        }}>
+          {list.name}
+        </h2>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              padding: '6px 12px',
+              backgroundColor: '#f0f0f0',
+              color: '#666',
+              border: 'none',
+              borderRadius: '4px',
+              fontSize: '13px',
+              cursor: 'pointer'
+            }}
+          >
+            Close
+          </button>
+        )}
       </div>
-      <ul className="mb-4" style={{ color: 'var(--muted)' }}>
-        {list.items.map(item => (
-          <li key={item._id} className="flex items-center justify-between py-1">
-            <span>{item.ingredient} - {item.quantity}</span>
-            <button onClick={() => handleDeleteItem(item._id)} className="text-sm" style={{ color: 'var(--accent)', background: 'transparent', border: 'none' }}>Delete</button>
+      <ul style={{
+        listStyle: 'none',
+        padding: 0,
+        margin: '0 0 20px 0'
+      }}>
+        {(list.items || []).map((item, idx) => (
+          <li
+            key={item._id || idx}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px',
+              backgroundColor: '#f9f9f9',
+              borderRadius: '4px',
+              marginBottom: '8px'
+            }}
+          >
+            <span style={{ fontSize: '14px', color: '#333' }}>
+              {item.ingredient} - {item.quantity}
+            </span>
+            <button
+              onClick={() => handleDeleteItem(item._id || item.id)}
+              style={{
+                padding: '4px 8px',
+                backgroundColor: '#ff4444',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '12px',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#cc0000'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#ff4444'}
+            >
+              Delete
+            </button>
           </li>
         ))}
+        {(!list.items || list.items.length === 0) && (
+          <li style={{ textAlign: 'center', color: '#999', padding: '20px' }}>
+            No items in this list
+          </li>
+        )}
       </ul>
-      <form onSubmit={handleAddItem} className="flex gap-2">
+      <form onSubmit={handleAddItem} style={{
+        display: 'flex',
+        gap: '8px',
+        flexWrap: 'wrap'
+      }}>
         <input
           value={itemForm.ingredient}
-          onChange={e => setItemForm(f => ({ ...f, ingredient: e.target.value }))}
+          onChange={(e) => setItemForm(f => ({ ...f, ingredient: e.target.value }))}
           placeholder="Ingredient"
           required
-          className="flex-1 p-2 rounded"
-          style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.04)', color: 'var(--text)' }}
+          style={{
+            flex: 1,
+            minWidth: '150px',
+            padding: '10px',
+            border: '1px solid #e0e0e0',
+            borderRadius: '4px',
+            fontSize: '14px',
+            outline: 'none'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+          onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
         />
         <input
           value={itemForm.quantity}
-          onChange={e => setItemForm(f => ({ ...f, quantity: e.target.value }))}
+          onChange={(e) => setItemForm(f => ({ ...f, quantity: e.target.value }))}
           placeholder="Quantity"
           required
-          className="w-32 p-2 rounded"
-          style={{ background: 'var(--bg)', border: '1px solid rgba(255,255,255,0.04)', color: 'var(--text)' }}
+          style={{
+            width: '100px',
+            padding: '10px',
+            border: '1px solid #e0e0e0',
+            borderRadius: '4px',
+            fontSize: '14px',
+            outline: 'none'
+          }}
+          onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+          onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
         />
-        <button type="submit" className="px-3 py-2 rounded" style={{ background: 'var(--accent)', color: '#fff' }}>Add</button>
+        <button
+          type="submit"
+          style={{
+            padding: '10px 20px',
+            backgroundColor: '#4caf50',
+            color: '#ffffff',
+            border: 'none',
+            borderRadius: '4px',
+            fontSize: '14px',
+            fontWeight: '500',
+            cursor: 'pointer',
+            transition: 'background-color 0.2s'
+          }}
+          onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+          onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}
+        >
+          Add
+        </button>
       </form>
     </div>
   );

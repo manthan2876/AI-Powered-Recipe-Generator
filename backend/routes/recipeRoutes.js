@@ -12,17 +12,19 @@ import {
   searchRecipesByIngredients,
   toggleFavoriteRecipe,
   getFavoriteRecipes,
+  getAllIngredients,
 } from '../controllers/recipeController.js';
-import { protect, admin } from '../middleware/authMiddleware.js';
+import { protect, optionalProtect, admin } from '../middleware/authMiddleware.js';
 
 router.route('/').get(getRecipes).post(protect, createRecipe);
 router.route('/top').get(getTopRecipes);
 router.route('/generate').post(protect, generateRecipe);
-router.route('/search').get(searchRecipesByIngredients);
+router.route('/search').get(optionalProtect, searchRecipesByIngredients);
+router.route('/ingredients').get(getAllIngredients);
 router.route('/favorites').get(protect, getFavoriteRecipes);
 router
   .route('/:id')
-  .get(getRecipeById)
+  .get(optionalProtect, getRecipeById)
   .delete(protect, admin, deleteRecipe)
   .put(protect, updateRecipe);
 router.route('/:id/reviews').post(protect, createRecipeReview);

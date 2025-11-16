@@ -26,6 +26,23 @@ const protect = asyncHandler(async (req, res, next) => {
   }
 });
 
+const optionalProtect = asyncHandler(async (req, res, next) => {
+  let token;
+
+  token = req.cookies.jwt;
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET || 'abc123');
+      req.user = await User.findById(decoded.userId).select('-password');
+    } catch (error) {
+      // If token is invalid, just continue without setting req.user
+      req.user = null;
+    }
+  }
+  next();
+});
+
 const admin = (req, res, next) => {
   if (req.user && req.user.isAdmin) {
     next();
@@ -35,4 +52,4 @@ const admin = (req, res, next) => {
   }
 };
 
-export { protect, admin };
+export { protect, optionalProtect, admin };

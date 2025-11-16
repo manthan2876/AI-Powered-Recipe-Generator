@@ -1,123 +1,116 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect } from "react";
 import RecipeCard from "../components/RecipeCard";
-import PageContainer, { fadeIn, staggerContainer } from "../components/PageContainer";
-
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
-};
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
-  exit: { opacity: 0, y: 30, transition: { duration: 0.3 } },
-};
-
-// Sample static recipes for quick display
-const sampleSavedRecipes = [
-  {
-    _id: "1",
-    title: "Classic Spaghetti Carbonara",
-    description: "Creamy and savory Italian pasta with eggs, cheese, and pancetta.",
-    image: "https://images.unsplash.com/photo-1604908177527-f9711b09950d?auto=format&fit=crop&w=600&q=80",
-    url: "https://www.simplyrecipes.com/recipes/spaghetti_alla_carbonara/"
-  },
-  {
-    _id: "2",
-    title: "Avocado Toast with Poached Eggs",
-    description: "Simple and healthy breakfast with mashed avocado and perfectly poached eggs.",
-    image: "https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=600&q=80",
-    url: "https://cookieandkate.com/best-avocado-toast-recipe/"
-  },
-  {
-    _id: "3",
-    title: "Classic Caesar Salad",
-    description: "Crisp romaine lettuce tossed in creamy Caesar dressing with croutons.",
-    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
-    url: "https://www.simplyrecipes.com/recipes/caesar_salad/"
-  },
-];
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import { getFavoriteRecipes, toggleFavorite } from "../services/recipes";
 
 const SavedRecipes = () => {
-  const [recipes, setRecipes] = useState(sampleSavedRecipes);
+  const [recipes, setRecipes] = useState([]);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
 
-  const handleRemove = (id) => {
+  useEffect(() => {
+    async function fetchFavorites() {
+      try {
+        setLoading(true);
+        const data = await getFavoriteRecipes();
+        setRecipes(data || []);
+      } catch (err) {
+        setError("Failed to load saved recipes");
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchFavorites();
+  }, []);
+
+  const handleRemove = async (id) => {
     if (window.confirm("Remove this recipe from saved?")) {
-      setRecipes((prev) => prev.filter((r) => r._id !== id));
+      try {
+        await toggleFavorite(id);
+        setRecipes((prev) => prev.filter((r) => r._id !== id));
+      } catch (err) {
+        setError("Failed to remove recipe");
+        console.error(err);
+      }
     }
   };
 
   return (
-    <PageContainer>
-      <div className="min-h-screen w-full px-4 py-6 md:px-8 lg:px-12">
-        <motion.header 
-          variants={fadeIn('down', 0.2)}
-          initial="initial"
-          animate="animate"
-          className="max-w-6xl mx-auto mb-8 md:mb-12"
-        >
-          <h1 className="text-gradient-1 font-commissioner text-3xl md:text-4xl lg:text-5xl font-bold tracking-wider text-center">
-            Saved Recipes
-          </h1>
-        </motion.header>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{
+        flex: 1,
+        padding: '40px 20px',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <header style={{ marginBottom: '40px', textAlign: 'center' }}>
+            <h1 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#333'
+            }}>
+              Saved Recipes
+            </h1>
+          </header>
 
-        {error && (
-          <motion.div
-            className="text-red-500 text-center mb-6 font-imprima"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {error}
-          </motion.div>
-        )}
-
-        <motion.main 
-          variants={fadeIn('up', 0.3)}
-          initial="initial"
-          animate="animate"
-          className="max-w-6xl mx-auto"
-        >
-          {recipes.length === 0 ? (
-            <motion.p 
-              variants={fadeIn('up', 0.4)}
-              className="text-center font-imprima text-lg md:text-xl"
-              style={{ color: 'var(--muted)' }}
-            >
-              No saved recipes yet.
-            </motion.p>
-          ) : (
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 md:gap-8"
-              variants={containerVariants}
-              initial="hidden"
-              animate="visible"
-              exit="hidden"
-            >
-              <AnimatePresence>
-                {recipes.map((recipe) => (
-                  <motion.div
-                    key={recipe._id}
-                    variants={cardVariants}
-                    initial="hidden"
-                    animate="visible"
-                    exit="exit"
-                    whileHover={{ scale: 1.03 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    <RecipeCard
-                      recipe={recipe}
-                      onDelete={() => handleRemove(recipe._id)}
-                    />
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </motion.div>
+          {error && (
+            <div style={{
+              color: '#ff4444',
+              textAlign: 'center',
+              marginBottom: '20px',
+              fontSize: '14px',
+              padding: '12px',
+              backgroundColor: '#ffebee',
+              borderRadius: '4px'
+            }}>
+              {error}
+            </div>
           )}
-        </motion.main>
-      </div>
-    </PageContainer>
+
+          {loading ? (
+            <p style={{
+              textAlign: 'center',
+              fontSize: '16px',
+              color: '#666',
+              padding: '40px'
+            }}>
+              Loading saved recipes...
+            </p>
+          ) : recipes.length === 0 ? (
+            <p style={{
+              textAlign: 'center',
+              fontSize: '16px',
+              color: '#666',
+              padding: '40px'
+            }}>
+              No saved recipes yet.
+            </p>
+          ) : (
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gap: '24px'
+            }}>
+              {recipes.map((recipe) => (
+                <div key={recipe._id}>
+                  <RecipeCard
+                    recipe={recipe}
+                    onDelete={() => handleRemove(recipe._id)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 };
 

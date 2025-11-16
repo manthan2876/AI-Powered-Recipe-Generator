@@ -17,7 +17,9 @@ connectDB();
 const app = express();
 
 const corsOptions = {
-  origin: "http://localhost:3000",
+  origin: process.env.FRONTEND_URL 
+    ? process.env.FRONTEND_URL.split(',') 
+    : ["http://localhost:5173", "http://localhost:3000"],
   credentials: true,
 };
 

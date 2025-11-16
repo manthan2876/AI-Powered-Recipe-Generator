@@ -46,3 +46,17 @@ export async function logout() {
     credentials: 'include',
   });
 }
+
+export async function updateUserProfile(data) {
+  const res = await fetch(`${API_BASE}/api/users/profile`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to update profile');
+  }
+  return res.json();
+}

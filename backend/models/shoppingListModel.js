@@ -14,10 +14,6 @@ const shoppingListItemSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
-    recipe: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Recipe',
-    },
   },
   {
     timestamps: true,

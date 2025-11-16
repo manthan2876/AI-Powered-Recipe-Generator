@@ -21,6 +21,16 @@ const userSchema = mongoose.Schema(
       required: true,
       default: false,
     },
+    savedRecipes: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Recipe',
+      },
+    ],
+    dietaryPreferences: {
+      type: [String],
+      default: [],
+    },
   },
   {
     timestamps: true,

@@ -1,342 +1,805 @@
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import RecipeCard from "../components/RecipeCard"; // Adjust path as needed
+import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
+import RecipeCard from "../components/RecipeCard";
+import RecipeDetail from "../components/RecipeDetail";
 import Header from "../components/Header";
-import Footer from "../components/Footer";
-
-// Animation variants for Framer Motion
-const fadeIn = (direction = "up", delay = 0) => ({
-  initial: {
-    y: direction === "up" ? 40 : direction === "down" ? -40 : 0,
-    x: direction === "left" ? 40 : direction === "right" ? -40 : 0,
-    opacity: 0,
-  },
-  animate: {
-    y: 0,
-    x: 0,
-    opacity: 1,
-    transition: {
-      type: "tween",
-      duration: 1,
-      delay: delay,
-      ease: [0.25, 0.25, 0.25, 0.75],
-    },
-  },
-});
-
-const pantryEssentials = [
-  "egg",
-  "garlic",
-  "butter",
-  "milk",
-  "onion",
-  "sugar",
-  "olive oil",
-  "flour",
-  "mayonnaise",
-  "soy sauce",
-  "ketchup",
-  "vegetable oil",
-];
+import { AuthContext } from "../context/AuthContext";
+import { getAllIngredients, searchRecipesByIngredients, getRecipeById } from "../services/recipes";
+import { getCurrentUser } from "../services/auth";
 
 const filters = [
-  "Key Ingredient(s)",
-  "Exclude",
-  "Meal type",
-  "Missing one ingredient",
-  "Video only",
-  "Cuisines",
-  "Diet",
-  "Max Ingredients",
-  "Rating",
-  "Recipe time",
+  "Exclude", "Cuisine", "Diet", "Rating", "Recipe time", "Difficulty", "AI or Human"
 ];
-
-const keyIngredients = [
-  "olive oil",
-  "butter",
-  "vinegar",
-  "flour",
-  "extra virgin olive oil",
-  "sugar",
-  "cooking spray",
-  "banana",
-  "bacon",
-  "bread",
-];
-
-const sampleRecipes = [
-  {
-    _id: "1",
-    image:
-      "https://images.unsplash.com/photo-1504674900247-0877df9cc836?auto=format&fit=crop&w=600&q=80",
-    title: "Instant Pot Hard Boiled Eggs",
-    description:
-      "Perfect hard boiled eggs every time, great for breakfast or salads.",
-    url: "https://eatingonadime.com/instant-pot-hard-boiled-eggs/",
-  },
-  {
-    _id: "2",
-    image:
-      "https://images.unsplash.com/photo-1502741338009-cac2772e18bc?auto=format&fit=crop&w=600&q=80",
-    title: "Egg Ribbons",
-    description: "Easy homemade egg noodles for soups and stir fries.",
-    url: "https://www.iamafoodblog.com/egg-ribbons/",
-  },
-  {
-    _id: "3",
-    image:
-      "https://images.unsplash.com/photo-1464306076886-debede19fc21?auto=format&fit=crop&w=600&q=80",
-    title: "Hard Boiled Eggs",
-    description: "Simple hard boiled eggs with a perfect peel.",
-    url: "https://www.foodnetwork.com/recipes/articles/how-to-make-hard-boiled-eggs",
-  },
-];
-
-const cardVariants = {
-  hidden: { opacity: 0, y: 30, scale: 0.97 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: { duration: 0.5, type: "spring" },
-  },
-  exit: { opacity: 0, y: 30, scale: 0.97, transition: { duration: 0.3 } },
-};
 
 export default function RecipesPage() {
-  const [selectedPantry, setSelectedPantry] = useState(["egg", "garlic"]);
-  const [search, setSearch] = useState("");
-  const [recipes, setRecipes] = useState(sampleRecipes);
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
+  const [allIngredients, setAllIngredients] = useState([]);
+  const [filteredIngredients, setFilteredIngredients] = useState([]);
+  const [selectedIngredients, setSelectedIngredients] = useState([]);
+  const [ingredientSearch, setIngredientSearch] = useState("");
+  const [recipes, setRecipes] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [recipeCount, setRecipeCount] = useState(0);
+  const [showBanner, setShowBanner] = useState(true);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+  const [userDietaryPreferences, setUserDietaryPreferences] = useState([]);
+  
+  // Filter states
+  const [activeFilters, setActiveFilters] = useState({
+    excludeIngredients: [],
+    cuisine: null,
+    dietaryRestrictions: [],
+    minRating: null,
+    maxTotalTime: null,
+    difficulty: null,
+    isGenerated: null, // null = all, true = AI, false = Human
+  });
+  const [showFilterModal, setShowFilterModal] = useState(null);
+
+  // Fetch all ingredients and user dietary preferences on component mount
+  useEffect(() => {
+    const fetchIngredients = async () => {
+      try {
+        const ingredients = await getAllIngredients();
+        setAllIngredients(ingredients);
+        setFilteredIngredients(ingredients);
+      } catch (error) {
+        console.error("Error fetching ingredients:", error);
+      }
+    };
+    fetchIngredients();
+
+    // Fetch user dietary preferences if logged in
+    const fetchUserPreferences = async () => {
+      if (user) {
+        try {
+          const userData = await getCurrentUser();
+          if (userData && userData.dietaryPreferences && userData.dietaryPreferences.length > 0) {
+            setUserDietaryPreferences(userData.dietaryPreferences);
+            // Automatically apply dietary preferences to filters
+            setActiveFilters(prev => ({
+              ...prev,
+              dietaryRestrictions: userData.dietaryPreferences
+            }));
+          }
+        } catch (error) {
+          console.error("Error fetching user preferences:", error);
+        }
+      }
+    };
+    fetchUserPreferences();
+  }, [user]);
+
+  // Filter ingredients based on search
+  useEffect(() => {
+    if (ingredientSearch.trim() === "") {
+      setFilteredIngredients(allIngredients);
+    } else {
+      const searchLower = ingredientSearch.toLowerCase();
+      const filtered = allIngredients.filter(ing =>
+        ing.toLowerCase().includes(searchLower)
+      );
+      setFilteredIngredients(filtered);
+    }
+  }, [ingredientSearch, allIngredients]);
+
+  // Search recipes when ingredients or filters change
+  useEffect(() => {
+    const searchRecipes = async () => {
+      if (selectedIngredients.length === 0) {
+        setRecipes([]);
+        setRecipeCount(0);
+        return;
+      }
+
+      setLoading(true);
+      try {
+        const filters = {
+          limit: 50,
+          ...activeFilters,
+        };
+        
+        if (activeFilters.excludeIngredients.length > 0) {
+          filters.excludeIngredients = activeFilters.excludeIngredients;
+        }
+        
+        if (activeFilters.dietaryRestrictions.length > 0) {
+          filters.dietaryRestrictions = activeFilters.dietaryRestrictions;
+        }
+
+        const results = await searchRecipesByIngredients(selectedIngredients, filters);
+        setRecipes(results);
+        setRecipeCount(results.length);
+      } catch (error) {
+        console.error("Error searching recipes:", error);
+        setRecipes([]);
+        setRecipeCount(0);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    searchRecipes();
+  }, [selectedIngredients, activeFilters]);
 
   const handleIngredientToggle = (ingredient) => {
-    setSelectedPantry((prev) =>
+    setSelectedIngredients((prev) =>
       prev.includes(ingredient)
         ? prev.filter((i) => i !== ingredient)
         : [...prev, ingredient]
     );
   };
 
-  const filteredRecipes = recipes.filter((recipe) =>
-    recipe.title.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleDelete = (id) => {
-    if (window.confirm("Are you sure you want to delete this recipe?")) {
-      setRecipes((prevRecipes) => prevRecipes.filter((r) => r._id !== id));
+  const handleFilterClick = (filterName) => {
+    if (showFilterModal === filterName) {
+      setShowFilterModal(null);
+    } else {
+      setShowFilterModal(filterName);
     }
   };
 
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen(!isMobileSidebarOpen);
+  const updateFilter = (key, value) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [key]: value
+    }));
+    setShowFilterModal(null);
   };
 
+  const clearFilter = (key) => {
+    setActiveFilters(prev => ({
+      ...prev,
+      [key]: key === 'excludeIngredients' || key === 'dietaryRestrictions' ? [] : null
+    }));
+    setShowFilterModal(null);
+  };
+
+  const handleGenerateRecipe = () => {
+    navigate("/generate-recipe", {
+      state: { selectedIngredients }
+    });
+  };
+
+  const handleRecipeClick = async (recipe) => {
+    try {
+      const fullRecipe = await getRecipeById(recipe._id);
+      setSelectedRecipe(fullRecipe);
+    } catch (error) {
+      console.error("Error fetching recipe details:", error);
+      // Fallback to showing the recipe we already have
+      setSelectedRecipe(recipe);
+    }
+  };
+
+  const handleCloseRecipeDetail = () => {
+    setSelectedRecipe(null);
+  };
+
+  const handleRecipeUpdate = async () => {
+    if (selectedRecipe) {
+      try {
+        const updatedRecipe = await getRecipeById(selectedRecipe._id);
+        setSelectedRecipe(updatedRecipe);
+        // Also update the recipe in the list if it exists
+        setRecipes(prevRecipes => 
+          prevRecipes.map(r => r._id === updatedRecipe._id ? updatedRecipe : r)
+        );
+      } catch (error) {
+        console.error("Error refreshing recipe:", error);
+      }
+    }
+  };
+
+  const totalSelected = selectedIngredients.length;
+
   return (
-    <>
-      <Header />
-      <div className="min-h-screen flex flex-col">
-        <main className="flex-grow landing_main">
-          <div className="flex flex-col md:flex-row min-h-screen">
-            {/* Mobile Sidebar Toggle Button */}
-              <motion.button
-              variants={fadeIn("right", 0.1)}
-              initial="initial"
-              animate="animate"
-              className="md:hidden fixed top-20 left-4 z-50 p-3 rounded-full border"
-              onClick={toggleMobileSidebar}
-            >
-                <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                style={{ color: 'var(--muted)' }}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </motion.button>
-
-            {/* Pantry Sidebar - Desktop always visible, Mobile conditionally visible */}
-            <motion.aside
-              variants={fadeIn("left", 0.2)}
-              initial="initial"
-              animate="animate"
-              className={`${
-                  isMobileSidebarOpen ? "fixed inset-0 z-40" : "hidden"
-                } md:relative md:block md:w-80 p-6 border-r overflow-y-auto`}
-            >
-              <motion.div
-                variants={fadeIn("down", 0.3)}
-                className="mb-6 flex items-center justify-between"
-              >
-                <h2 className="text-gradient-1 font-commissioner text-2xl font-bold tracking-wider">
-                  Pantry
-                </h2>
-                <span className="font-imprima text-muted">
-                  {selectedPantry.length} Ingredients
-                </span>
-                {/* Close button for mobile */}
-                <button
-                  className="md:hidden"
-                  onClick={toggleMobileSidebar}
-                  style={{ color: 'var(--muted)' }}
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
-                    />
-                  </svg>
-                </button>
-              </motion.div>
-
-                <motion.div variants={fadeIn("up", 0.4)}>
-                <input
-                  type="text"
-                  placeholder="Add/remove/paste ingredients"
-                  className="w-full mb-6 input"
-                />
-              </motion.div>
-
-              <motion.p
-                variants={fadeIn('right', 0.5)}
-                className="mb-3 font-commissioner text-lg tracking-wider"
-                style={{ color: 'var(--text)' }}
-              >
-                Pantry Essentials
-              </motion.p>
-
-              <motion.div
-                variants={fadeIn("up", 0.6)}
-                className="flex flex-wrap gap-2 mb-6"
-              >
-                {pantryEssentials.map((ingredient, index) => (
-                  <motion.button
-                    key={ingredient}
-                    variants={fadeIn("up", 0.2 + index * 0.05)}
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className={`px-3 py-2 rounded-lg text-sm font-imprima transition-all duration-200 ${
-                      selectedPantry.includes(ingredient)
-                        ? "bg-card text-main"
-                        : "bg-card border text-muted"
-                    }`}
-                    onClick={() => handleIngredientToggle(ingredient)}
-                  >
-                    {ingredient}
-                  </motion.button>
-                ))}
-              </motion.div>
-
-              <div className="mt-8 mb-4 p-3 rounded" style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--muted)' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <Header selectedIngredientsCount={totalSelected} recipeCount={recipeCount} />
+      
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 60px)' }}>
+        {/* Left Sidebar */}
+        <aside style={{
+          width: '320px',
+          backgroundColor: '#ffffff',
+          borderRight: '1px solid #e0e0e0',
+          overflowY: 'auto',
+          height: 'calc(100vh - 60px)',
+          padding: '20px'
+        }}>
+          {/* Assumed Ingredients Banner */}
+          {showBanner && (
+            <div style={{
+              marginBottom: '20px',
+              backgroundColor: '#f0f0f0',
+              borderRadius: '4px',
+              padding: '12px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <p style={{ fontSize: '13px', color: '#666', lineHeight: '1.5' }}>
                 The only ingredients we assume you have are{" "}
-                <span style={{ color: 'var(--text)' }}>salt</span>,{" "}
-                <span style={{ color: 'var(--text)' }}>pepper</span> and{" "}
-                <span style={{ color: 'var(--text)' }}>water</span>.
-              </div>
-            </motion.aside>
-
-            {/* Main Content */}
-            <motion.div
-              variants={fadeIn("right", 0.3)}
-              initial="initial"
-              animate="animate"
-              className="flex-1 p-6 md:p-8 lg:p-10"
-            >
-              <motion.div variants={fadeIn("down", 0.4)} className="mb-8">
-                <h1 className="text-gradient-1 font-commissioner text-3xl md:text-4xl lg:text-5xl font-bold tracking-wider mb-6">
-                  Recipes
-                </h1>
-                <motion.div
-                  variants={fadeIn("up", 0.5)}
-                  className="flex flex-wrap gap-2 mb-6"
-                >
-                  {filters.map((filter, index) => (
-                      <motion.button
-                        key={filter}
-                        variants={fadeIn("up", 0.2 + index * 0.05)}
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
-                        className="px-4 py-2 rounded-lg text-sm transition-all duration-200"
-                        style={{ background: 'rgba(255,255,255,0.02)', color: 'var(--text)' }}
-                      >
-                        {filter}
-                      </motion.button>
-                    ))}
-                </motion.div>
-
-                <motion.div variants={fadeIn("up", 0.6)} className="relative">
-                  <input
-                    type="text"
-                    placeholder="Search recipes..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="w-full input"
-                  />
-                  <span className="absolute right-3 top-3 text-muted">
-                    {/* Search icon */}
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                      />
-                    </svg>
-                  </span>
-                </motion.div>
-              </motion.div>
-
-              {/* Recipe Grid */}
-              <motion.div
-                variants={fadeIn("up", 0.7)}
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
+                <span style={{ fontWeight: '600' }}>salt</span>,{" "}
+                <span style={{ fontWeight: '600' }}>pepper</span> and{" "}
+                <span style={{ fontWeight: '600' }}>water</span>.
+              </p>
+              <button
+                onClick={() => setShowBanner(false)}
+                style={{
+                  marginLeft: '8px',
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  color: '#999',
+                  fontSize: '18px',
+                  padding: '0',
+                  width: '20px',
+                  height: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
               >
-                <AnimatePresence>
-                  {filteredRecipes.map((recipe) => (
-                    <motion.div
-                      key={recipe._id}
-                      variants={cardVariants}
-                      initial="hidden"
-                      animate="visible"
-                      exit="exit"
-                      layout
-                      className="bg-card glass rounded-xl overflow-hidden border transition-all duration-300"
-                    >
-                      <RecipeCard
-                        recipe={recipe}
-                        onDelete={() => handleDelete(recipe._id)}
-                      />
-                    </motion.div>
-                  ))}
-                </AnimatePresence>
-              </motion.div>
-            </motion.div>
+                ×
+              </button>
+            </div>
+          )}
+
+          {/* Search Bar */}
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              backgroundColor: '#f5f5f5',
+              borderRadius: '4px',
+              padding: '8px 12px',
+              gap: '8px',
+              border: '1px solid #e0e0e0'
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+              </svg>
+              <input
+                type="text"
+                placeholder="Search ingredients..."
+                value={ingredientSearch}
+                onChange={(e) => setIngredientSearch(e.target.value)}
+                style={{
+                  border: 'none',
+                  outline: 'none',
+                  background: 'transparent',
+                  flex: 1,
+                  fontSize: '14px',
+                  color: '#333'
+                }}
+              />
+            </div>
           </div>
+
+          {/* Ingredients List */}
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <h2 style={{ fontSize: '18px', fontWeight: '600', color: '#333' }}>
+                All Ingredients
+              </h2>
+              <span style={{ fontSize: '13px', color: '#666' }}>
+                {selectedIngredients.length} selected
+              </span>
+            </div>
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '8px',
+              maxHeight: 'calc(100vh - 300px)',
+              overflowY: 'auto'
+            }}>
+              {filteredIngredients.length === 0 ? (
+                <p style={{ fontSize: '13px', color: '#666', padding: '12px' }}>
+                  No ingredients found
+                </p>
+              ) : (
+                filteredIngredients.map((ingredient) => {
+                  const isSelected = selectedIngredients.includes(ingredient);
+                  return (
+                    <button
+                      key={ingredient}
+                      onClick={() => handleIngredientToggle(ingredient)}
+                      style={{
+                        padding: '6px 12px',
+                        borderRadius: '4px',
+                        fontSize: '13px',
+                        fontWeight: '500',
+                        border: 'none',
+                        cursor: 'pointer',
+                        backgroundColor: isSelected ? '#4caf50' : '#f0f0f0',
+                        color: isSelected ? '#ffffff' : '#333',
+                        transition: 'all 0.2s',
+                        textTransform: 'capitalize'
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!isSelected) {
+                          e.target.style.backgroundColor = '#e0e0e0';
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!isSelected) {
+                          e.target.style.backgroundColor = '#f0f0f0';
+                        }
+                      }}
+                    >
+                      {ingredient}
+                    </button>
+                  );
+                })
+              )}
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Content */}
+        <main style={{
+          flex: 1,
+          overflowY: 'auto',
+          height: 'calc(100vh - 60px)',
+          padding: '24px'
+        }}>
+          {/* Filter Buttons */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px', position: 'relative' }}>
+            {filters.map((filter) => {
+              const isActive = showFilterModal === filter;
+              const hasActiveFilter = 
+                (filter === "Exclude" && activeFilters.excludeIngredients.length > 0) ||
+                (filter === "Cuisine" && activeFilters.cuisine) ||
+                (filter === "Diet" && activeFilters.dietaryRestrictions.length > 0) ||
+                (filter === "Rating" && activeFilters.minRating) ||
+                (filter === "Recipe time" && activeFilters.maxTotalTime) ||
+                (filter === "Difficulty" && activeFilters.difficulty) ||
+                (filter === "AI or Human" && activeFilters.isGenerated !== null);
+              
+              return (
+                <div key={filter} style={{ position: 'relative' }}>
+                  <button
+                    onClick={() => handleFilterClick(filter)}
+                    style={{
+                      padding: '8px 16px',
+                      borderRadius: '4px',
+                      fontSize: '13px',
+                      fontWeight: '500',
+                      border: '2px solid #4caf50',
+                      color: isActive || hasActiveFilter ? '#ffffff' : '#4caf50',
+                      backgroundColor: isActive || hasActiveFilter ? '#4caf50' : '#ffffff',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isActive && !hasActiveFilter) {
+                        e.target.style.backgroundColor = '#f0f9f0';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isActive && !hasActiveFilter) {
+                        e.target.style.backgroundColor = '#ffffff';
+                      }
+                    }}
+                  >
+                    {filter}
+                    {hasActiveFilter && !isActive && (
+                      <span style={{ fontSize: '10px' }}>●</span>
+                    )}
+                  </button>
+                  
+                  {/* Filter Modal */}
+                  {isActive && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '100%',
+                      left: 0,
+                      marginTop: '8px',
+                      backgroundColor: '#ffffff',
+                      border: '1px solid #e0e0e0',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+                      zIndex: 100,
+                      minWidth: '250px',
+                      maxWidth: '400px'
+                    }}>
+                      {filter === "Exclude" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Exclude Ingredients</h4>
+                          <input
+                            type="text"
+                            placeholder="Type ingredient to exclude..."
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter' && e.target.value.trim()) {
+                                updateFilter('excludeIngredients', [...activeFilters.excludeIngredients, e.target.value.trim()]);
+                                e.target.value = '';
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px',
+                              marginBottom: '8px'
+                            }}
+                          />
+                          {activeFilters.excludeIngredients.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginTop: '8px' }}>
+                              {activeFilters.excludeIngredients.map((ing, idx) => (
+                                <span
+                                  key={idx}
+                                  style={{
+                                    padding: '4px 8px',
+                                    backgroundColor: '#f0f0f0',
+                                    borderRadius: '4px',
+                                    fontSize: '12px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  {ing}
+                                  <button
+                                    onClick={() => updateFilter('excludeIngredients', activeFilters.excludeIngredients.filter((_, i) => i !== idx))}
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px' }}
+                                  >
+                                    ×
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {filter === "Cuisine" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Cuisine</h4>
+                          <input
+                            type="text"
+                            placeholder="Enter cuisine (e.g., Italian, Mexican)..."
+                            defaultValue={activeFilters.cuisine || ''}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                updateFilter('cuisine', e.target.value.trim() || null);
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px'
+                            }}
+                          />
+                          {activeFilters.cuisine && (
+                            <button
+                              onClick={() => clearFilter('cuisine')}
+                              style={{
+                                marginTop: '8px',
+                                padding: '6px 12px',
+                                backgroundColor: '#f0f0f0',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {filter === "Diet" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Dietary Restrictions</h4>
+                          {['Vegetarian', 'Vegan', 'Gluten-Free', 'Dairy-Free', 'Keto', 'Paleo'].map(diet => {
+                            const isSelected = activeFilters.dietaryRestrictions.includes(diet);
+                            return (
+                              <button
+                                key={diet}
+                                onClick={() => {
+                                  const newRestrictions = isSelected
+                                    ? activeFilters.dietaryRestrictions.filter(r => r !== diet)
+                                    : [...activeFilters.dietaryRestrictions, diet];
+                                  updateFilter('dietaryRestrictions', newRestrictions);
+                                }}
+                                style={{
+                                  display: 'block',
+                                  width: '100%',
+                                  padding: '8px',
+                                  marginBottom: '4px',
+                                  border: '1px solid #e0e0e0',
+                                  borderRadius: '4px',
+                                  backgroundColor: isSelected ? '#4caf50' : '#ffffff',
+                                  color: isSelected ? '#ffffff' : '#333',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                {diet}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {filter === "Rating" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Minimum Rating</h4>
+                          <input
+                            type="number"
+                            min="0"
+                            max="5"
+                            step="0.1"
+                            placeholder="Enter min rating (0-5)..."
+                            defaultValue={activeFilters.minRating || ''}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                updateFilter('minRating', e.target.value ? parseFloat(e.target.value) : null);
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px'
+                            }}
+                          />
+                          {activeFilters.minRating && (
+                            <button
+                              onClick={() => clearFilter('minRating')}
+                              style={{
+                                marginTop: '8px',
+                                padding: '6px 12px',
+                                backgroundColor: '#f0f0f0',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {filter === "Recipe time" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Max Total Time (minutes)</h4>
+                          <input
+                            type="number"
+                            placeholder="Enter max time in minutes..."
+                            defaultValue={activeFilters.maxTotalTime || ''}
+                            onKeyPress={(e) => {
+                              if (e.key === 'Enter') {
+                                updateFilter('maxTotalTime', e.target.value ? parseInt(e.target.value) : null);
+                              }
+                            }}
+                            style={{
+                              width: '100%',
+                              padding: '8px',
+                              border: '1px solid #e0e0e0',
+                              borderRadius: '4px'
+                            }}
+                          />
+                          {activeFilters.maxTotalTime && (
+                            <button
+                              onClick={() => clearFilter('maxTotalTime')}
+                              style={{
+                                marginTop: '8px',
+                                padding: '6px 12px',
+                                backgroundColor: '#f0f0f0',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {filter === "Difficulty" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Difficulty Level</h4>
+                          {['Easy', 'Medium', 'Hard'].map(diff => (
+                            <button
+                              key={diff}
+                              onClick={() => updateFilter('difficulty', activeFilters.difficulty === diff ? null : diff)}
+                              style={{
+                                display: 'block',
+                                width: '100%',
+                                padding: '8px',
+                                marginBottom: '4px',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '4px',
+                                backgroundColor: activeFilters.difficulty === diff ? '#4caf50' : '#ffffff',
+                                color: activeFilters.difficulty === diff ? '#ffffff' : '#333',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {diff}
+                            </button>
+                          ))}
+                          {activeFilters.difficulty && (
+                            <button
+                              onClick={() => clearFilter('difficulty')}
+                              style={{
+                                marginTop: '8px',
+                                padding: '6px 12px',
+                                backgroundColor: '#f0f0f0',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '12px'
+                              }}
+                            >
+                              Clear
+                            </button>
+                          )}
+                        </div>
+                      )}
+                      
+                      {filter === "AI or Human" && (
+                        <div>
+                          <h4 style={{ marginBottom: '12px', fontSize: '14px', fontWeight: '600' }}>Recipe Source</h4>
+                          {[
+                            { label: 'All', value: null },
+                            { label: 'AI Generated', value: true },
+                            { label: 'Human Created', value: false }
+                          ].map(option => (
+                            <button
+                              key={option.label}
+                              onClick={() => updateFilter('isGenerated', option.value)}
+                              style={{
+                                display: 'block',
+                                width: '100%',
+                                padding: '8px',
+                                marginBottom: '4px',
+                                border: '1px solid #e0e0e0',
+                                borderRadius: '4px',
+                                backgroundColor: activeFilters.isGenerated === option.value ? '#4caf50' : '#ffffff',
+                                color: activeFilters.isGenerated === option.value ? '#ffffff' : '#333',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              {option.label}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <button
+                        onClick={() => setShowFilterModal(null)}
+                        style={{
+                          marginTop: '12px',
+                          padding: '8px 16px',
+                          backgroundColor: '#f0f0f0',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          fontSize: '12px',
+                          width: '100%'
+                        }}
+                      >
+                        Close
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          
+          {/* Click outside to close modal */}
+          {showFilterModal && (
+            <div
+              onClick={() => setShowFilterModal(null)}
+              style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 50
+              }}
+            />
+          )}
+
+          {/* Recipe Count */}
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            color: '#333',
+            marginBottom: '24px'
+          }}>
+            {loading ? 'Searching...' : selectedIngredients.length === 0 
+              ? 'Select ingredients to find recipes' 
+              : `You can make ${recipeCount} recipe${recipeCount !== 1 ? 's' : ''}`}
+          </h1>
+
+          {/* Recipe List or No Results */}
+          {selectedIngredients.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#666'
+            }}>
+              <p style={{ fontSize: '18px', marginBottom: '12px' }}>
+                Select ingredients from the side panel to find recipes
+              </p>
+            </div>
+          ) : loading ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#666'
+            }}>
+              <p style={{ fontSize: '18px' }}>Loading recipes...</p>
+            </div>
+          ) : recipes.length === 0 ? (
+            <div style={{
+              textAlign: 'center',
+              padding: '60px 20px',
+              color: '#666'
+            }}>
+              <p style={{ fontSize: '18px', marginBottom: '24px' }}>
+                No recipes found with the selected ingredients
+              </p>
+              <button
+                onClick={handleGenerateRecipe}
+                style={{
+                  padding: '12px 24px',
+                  backgroundColor: '#4caf50',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#45a049';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#4caf50';
+                }}
+              >
+                Generate Recipe
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              {recipes.map((recipe) => (
+                <RecipeCard 
+                  key={recipe._id} 
+                  recipe={recipe}
+                  onClick={() => handleRecipeClick(recipe)}
+                />
+              ))}
+            </div>
+          )}
         </main>
-        <Footer />
       </div>
-    </>
+      
+      {/* Recipe Detail Modal */}
+      {selectedRecipe && (
+        <RecipeDetail 
+          recipe={selectedRecipe} 
+          onClose={handleCloseRecipeDetail}
+          onUpdate={handleRecipeUpdate}
+        />
+      )}
+    </div>
   );
 }

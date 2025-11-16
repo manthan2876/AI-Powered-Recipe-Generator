@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
 import ShoppingList from "../components/ShoppingList";
 import ShoppingListDetail from "../components/ShoppingListDetail";
-import PageContainer, { fadeIn, staggerContainer } from "../components/PageContainer";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import { getShoppingLists, createShoppingList, deleteShoppingList } from "../services/shoppingLists";
 
 function ShoppingListsPage() {
@@ -10,116 +10,193 @@ function ShoppingListsPage() {
   const [newListName, setNewListName] = useState("");
   const [activeList, setActiveList] = useState(null);
 
+  const refreshLists = async () => {
+    try {
+      const data = await getShoppingLists();
+      setLists(data);
+    } catch (err) {
+      console.error('Error fetching shopping lists:', err);
+    }
+  };
+  
   useEffect(() => {
     refreshLists();
   }, []);
 
-  const refreshLists = async () => {
-    const data = await getShoppingLists();
-    setLists(data);
-  };
-
   const handleAddList = async (e) => {
     e.preventDefault();
     if (newListName.trim()) {
-      await createShoppingList({ name: newListName });
-      setNewListName("");
-      refreshLists();
+      try {
+        await createShoppingList({ name: newListName });
+        setNewListName("");
+        refreshLists();
+      } catch (err) {
+        console.error('Error creating shopping list:', err);
+      }
     }
   };
 
   const handleDelete = async (id) => {
-    await deleteShoppingList(id);
-    if (activeList && activeList.id === id) {
-      setActiveList(null);
+    try {
+      await deleteShoppingList(id);
+      if (activeList && activeList.id === id) {
+        setActiveList(null);
+      }
+      refreshLists();
+    } catch (err) {
+      console.error('Error deleting shopping list:', err);
     }
-    refreshLists();
   };
 
   return (
-    <PageContainer>
-      <div className="min-h-screen w-full px-4 py-6 md:px-8 lg:px-12">
-        <motion.div 
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-          className="max-w-6xl mx-auto"
-        >
-          <motion.h1 
-            variants={fadeIn('down', 0.1)}
-            className="text-gradient-1 font-commissioner text-3xl md:text-4xl lg:text-5xl font-bold tracking-wider text-center mb-8 md:mb-12"
-          >
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{
+        flex: 1,
+        padding: '40px 20px',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto'
+        }}>
+          <h1 style={{
+            fontSize: '32px',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            marginBottom: '40px',
+            color: '#333'
+          }}>
             Shopping Lists
-          </motion.h1>
+          </h1>
           
-          <motion.form 
-            variants={fadeIn('up', 0.2)}
+          <form
             onSubmit={handleAddList}
-            className="flex flex-col sm:flex-row gap-4 items-center justify-center mb-10"
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              marginBottom: '40px',
+              flexWrap: 'wrap'
+            }}
           >
             <input
               type="text"
               placeholder="New list name"
               value={newListName}
               onChange={(e) => setNewListName(e.target.value)}
-              className="w-full sm:w-auto flex-grow input font-imprima"
+              style={{
+                flex: 1,
+                minWidth: '200px',
+                maxWidth: '400px',
+                padding: '12px',
+                border: '1px solid #e0e0e0',
+                borderRadius: '4px',
+                fontSize: '14px',
+                outline: 'none'
+              }}
+              onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+              onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
             />
-            <motion.button 
+            <button
               type="submit"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto inline-flex items-center justify-center font-kalnia text-lg px-6 py-3 hover:scale-105 transition-transform duration-200 btn-primary"
+              style={{
+                padding: '12px 24px',
+                backgroundColor: '#4caf50',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '4px',
+                fontSize: '16px',
+                fontWeight: '500',
+                cursor: 'pointer',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}
             >
               Add List
-            </motion.button>
-          </motion.form>
+            </button>
+          </form>
           
-          <motion.div 
-            variants={fadeIn('up', 0.3)}
-            className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8"
-          >
-            <motion.div 
-              variants={fadeIn('right', 0.4)}
-              className="md:col-span-1 bg-card glass rounded-xl border p-4 md:p-6"
-            >
-              <h2 className="text-gradient-2 font-commissioner text-xl font-bold mb-4">Your Lists</h2>
-              <ul className="space-y-3">
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '24px'
+          }}>
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0',
+              padding: '24px'
+            }}>
+              <h2 style={{
+                fontSize: '20px',
+                fontWeight: '600',
+                marginBottom: '16px',
+                color: '#333'
+              }}>
+                Your Lists
+              </h2>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
                 {lists.map((list) => (
-                  <motion.li 
-                    key={list.id}
-                    whileHover={{ scale: 1.02 }}
-                    transition={{ duration: 0.2 }}
-                  >
+                  <li key={list.id || list._id} style={{ marginBottom: '12px' }}>
                     <ShoppingList
                       list={list}
-                      isActive={activeList && activeList.id === list.id}
+                      isActive={activeList && (activeList.id === list.id || activeList._id === list._id)}
                       onClick={() => setActiveList(list)}
-                      onDelete={() => handleDelete(list.id)}
+                      onDelete={() => handleDelete(list.id || list._id)}
                     />
-                  </motion.li>
+                  </li>
                 ))}
                 {lists.length === 0 && (
-                  <p className="text-muted font-imprima text-center py-4">No shopping lists yet</p>
+                  <li>
+                    <p style={{
+                      textAlign: 'center',
+                      color: '#666',
+                      padding: '20px',
+                      fontSize: '14px'
+                    }}>
+                      No shopping lists yet
+                    </p>
+                  </li>
                 )}
               </ul>
-            </motion.div>
+            </div>
             
-            <motion.div 
-              variants={fadeIn('left', 0.5)}
-              className="md:col-span-2 bg-card glass rounded-xl border p-4 md:p-6"
-            >
+            <div style={{
+              backgroundColor: '#ffffff',
+              borderRadius: '8px',
+              border: '1px solid #e0e0e0',
+              padding: '24px',
+              minHeight: '300px'
+            }}>
               {activeList ? (
-                <ShoppingListDetail list={activeList} />
+                <ShoppingListDetail
+                  list={activeList}
+                  onUpdated={refreshLists}
+                />
               ) : (
-                <div className="h-full flex items-center justify-center">
-                  <p className="text-muted font-imprima text-center py-12">Select a shopping list to view details</p>
+                <div style={{
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  <p style={{
+                    textAlign: 'center',
+                    color: '#666',
+                    fontSize: '14px'
+                  }}>
+                    Select a shopping list to view details
+                  </p>
                 </div>
               )}
-            </motion.div>
-          </motion.div>
-        </motion.div>
-      </div>
-    </PageContainer>
+            </div>
+          </div>
+        </div>
+      </main>
+      <Footer />
+    </div>
   );
 }
 

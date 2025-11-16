@@ -3,7 +3,7 @@ import mongoose from 'mongoose';
 const connectDB = async () => {
   try {
     const uri = process.env.MONGO_URI;
-    const conn = await mongoose.connect(uri || 'mongodb://localhost:27017/recipe_generator_db');
+    const conn = await mongoose.connect(uri || 'mongodb+srv://myAtlasDBUser:Manthan1528@myatlasclusteredu.rdkro.mongodb.net/recipe_generator_db?retryWrites=true&w=majority');
     console.log(`MongoDB Connected: ${conn.connection.host}`);
   } catch (error) {
     console.error(`Error: ${error.message}`);

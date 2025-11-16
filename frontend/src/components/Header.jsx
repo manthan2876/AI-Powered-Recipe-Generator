@@ -1,59 +1,145 @@
 import React, { useContext } from "react";
-import { Link, NavLink } from "react-router-dom"; // Using NavLink for active styles
-import { ThemeContext } from "../context/ThemeContext";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../context/AuthContext";
+import { logout } from "../services/auth";
 
 const Header = () => {
-  // Style for active NavLink will use CSS variable --accent
-  const activeLinkStyle = {
-    color: 'var(--accent)'
+  const { user, logoutUser } = useContext(AuthContext);
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await logout();
+      logoutUser();
+      navigate("/");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
-
-  const { theme, toggleTheme } = useContext(ThemeContext);
-
   return (
-    <header className="sticky top-0 z-50" style={{ background: 'rgba(0,0,0,0.35)', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
-        {/* Logo */}
-        <Link to="/" className="text-2xl font-bold font-commissioner text-[var(--accent)] hover:opacity-90 transition-colors">
-          CookCanvas
-        </Link>
+    <header style={{
+      backgroundColor: '#ffffff',
+      borderBottom: '1px solid #e0e0e0',
+      padding: '12px 20px',
+      position: 'sticky',
+      top: 0,
+      zIndex: 100,
+      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
+    }}>
+      <div style={{
+        maxWidth: '1400px',
+        margin: '0 auto',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        gap: '20px'
+      }}>
+        {/* Left Section */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
+          {/* Logo */}
+          <Link to="/" style={{ 
+            fontSize: '24px', 
+            fontWeight: 'bold', 
+            color: '#333',
+            textDecoration: 'none'
+          }}>
+            CookToGo
+          </Link>
 
-        {/* Navigation Links */}
-        <div className="space-x-6 flex items-center">
-          <NavLink 
-            to="/recipes" 
-            className="text-[var(--text)] hover:text-[var(--accent)] font-medium transition-colors"
-            style={({ isActive }) => isActive ? activeLinkStyle : undefined}
-          >
-            Recipes
-          </NavLink>
-          <NavLink 
-            to="/generate-recipe" 
-            className="text-[var(--text)] hover:text-[var(--accent)] font-medium transition-colors"
-            style={({ isActive }) => isActive ? activeLinkStyle : undefined}
-          >
-            Create Recipe
-          </NavLink>
-          <NavLink 
-            to="/saved-recipes" 
-            className="text-[var(--text)] hover:text-[var(--accent)] font-medium transition-colors"
-            style={({ isActive }) => isActive ? activeLinkStyle : undefined}
-          >
-            Saved
-          </NavLink>
-          <div className="flex items-center gap-3">
-            <button onClick={toggleTheme} className="px-3 py-1 text-sm rounded-md border" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
-              {theme === 'dark' ? 'Light' : 'Dark'}
-            </button>
-            <Link 
-              to="/login" 
-              className="px-4 py-2 rounded-md text-sm font-semibold" style={{ background: 'var(--accent)', color: '#fff' }}
-            >
-              Login
-            </Link>
-          </div>
         </div>
-      </nav>
+
+        {/* Right Section */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+
+          {/* Auth Buttons */}
+          {user ? (
+            <>
+              <Link to="/profile" style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                width: '36px',
+                height: '36px',
+                borderRadius: '50%',
+                backgroundColor: '#f0f0f0',
+                color: '#666',
+                textDecoration: 'none'
+              }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </Link>
+              <button
+                onClick={handleLogout}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  color: '#666',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Link
+                to="/login"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: 'transparent',
+                  color: '#666',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#f5f5f5';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = 'transparent';
+                }}
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: '#4caf50',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  textDecoration: 'none',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                onMouseEnter={(e) => {
+                  e.target.style.backgroundColor = '#45a049';
+                }}
+                onMouseLeave={(e) => {
+                  e.target.style.backgroundColor = '#4caf50';
+                }}
+              >
+                Register
+              </Link>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
 };

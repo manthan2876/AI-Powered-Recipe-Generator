@@ -1,12 +1,11 @@
 import { API_BASE } from "./apiConfig";
 
-// ingredientsText can be a string (comma separated) or an array
-export async function generateRecipe(ingredientsInput) {
-  const payload = Array.isArray(ingredientsInput)
-    ? { ingredients: ingredientsInput }
-    : { ingredients: (ingredientsInput || '').split(',').map(i => i.trim()).filter(Boolean) };
+// Update this function to just accept the array
+export async function generateRecipe(ingredientsArray) {
+  // The array is already built by the frontend, so just send it
+  const payload = { ingredients: ingredientsArray };
 
-  const response = await fetch(`${API_BASE}/api/recipes/generate`, {
+  const response = await fetch(`${API_BASE}/api/recipe-generation/generate`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: 'include',
@@ -15,7 +14,8 @@ export async function generateRecipe(ingredientsInput) {
 
   if (!response.ok) {
     const err = await response.json().catch(() => ({}));
-    throw new Error(err.message || "Generation failed");
+    // Throw the specific message from the server
+    throw new Error(err.message || "Generation failed. The server might be busy.");
   }
 
   return response.json(); // Expected: created recipe object

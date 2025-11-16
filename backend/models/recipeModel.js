@@ -36,6 +36,10 @@ const recipeSchema = mongoose.Schema(
       type: String,
       required: true,
     },
+    // 🟢 ADDED: Description field
+    description: {
+      type: String,
+    },
     image: {
       type: String,
     },
@@ -44,6 +48,10 @@ const recipeSchema = mongoose.Schema(
       required: true,
     },
     instructions: {
+      // ⚠️ Note: Your schema expects an array, but your Gemini
+      // prompt asks for a single string. Mongoose is likely
+      // saving your string as the only item in this array.
+      // This works, but it's not ideal.
       type: [String],
       required: true,
     },
@@ -89,6 +97,19 @@ const recipeSchema = mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    // 🟢 ADDED: Tags field
+    tags: {
+      type: [String],
+    },
+    // 🟢 ADDED: Notes field
+    notes: {
+      type: String,
+    },
+    // 🟢 ADDED: isPublic field
+    isPublic: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
@@ -98,7 +119,6 @@ const recipeSchema = mongoose.Schema(
 const Recipe = mongoose.model('Recipe', recipeSchema);
 
 // Helpful indexes for efficient search
-// Index ingredients array and title for quick lookups
 recipeSchema.index({ ingredients: 1 });
 recipeSchema.index({ title: 'text' });
 

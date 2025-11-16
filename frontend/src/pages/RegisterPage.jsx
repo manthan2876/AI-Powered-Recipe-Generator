@@ -1,38 +1,13 @@
-import React, { useState } from "react";
-import { register } from "../services/auth"; // Your authentication service
+import React, { useState, useContext } from "react";
+import { register } from "../services/auth";
 import { useNavigate, Link } from "react-router-dom";
-import { motion } from 'framer-motion';
-
-// Reusable animation variants for Framer Motion
-const fadeIn = (direction = 'up', delay = 0) => ({
-  initial: {
-    y: direction === 'up' ? 40 : direction === 'down' ? -40 : 0,
-    opacity: 0,
-  },
-  animate: {
-    y: 0,
-    opacity: 1,
-    transition: {
-      type: 'tween',
-      duration: 0.8,
-      delay: delay,
-      ease: [0.25, 0.25, 0.25, 0.75],
-    },
-  },
-});
-
-// Stagger animation for the container's children
-const staggerContainer = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { AuthContext } from '../context/AuthContext';
 
 export default function RegisterPage() {
-  // --- Core Register Logic (Preserved) ---
   const navigate = useNavigate();
+  const { loginUser } = useContext(AuthContext);
   const [data, setData] = useState({ name: "", email: "", password: "", confirmPassword: "" });
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -52,116 +27,195 @@ export default function RegisterPage() {
 
     setIsLoading(true);
     try {
-      await register({ name: data.name, email: data.email, password: data.password });
-      navigate("/login"); // Redirect to login page after successful registration
+      const userData = await register({ name: data.name, email: data.email, password: data.password });
+      loginUser(userData);
+      navigate("/home");
     } catch (err) {
       setError(err.message || "Failed to register. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
-  // --- End of Core Logic ---
 
   return (
-    // --- Appearance & Animation ---
-    <div className="min-h-screen w-full flex items-center justify-center p-4 font-inter register_main">
-      <motion.div
-        variants={fadeIn('up')}
-        initial="initial"
-        animate="animate"
-        className="w-full max-w-md p-8 md:p-12 space-y-6 glass rounded-2xl border"
-      >
-        <motion.div 
-          variants={staggerContainer} 
-          initial="initial" 
-          animate="animate" 
-          className="text-center"
-        >
-          <motion.h2 variants={fadeIn('down')} className="text-gradient-1 font-commissioner text-4xl lg:text-5xl font-bold tracking-wider">
-            Create Account
-          </motion.h2>
-            <motion.p variants={fadeIn('down', 0.1)} className="mt-2 text-muted">
-            Start your culinary journey with us.
-          </motion.p>
-        </motion.div>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      <Header />
+      <main style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '40px 20px',
+        backgroundColor: '#f5f5f5'
+      }}>
+        <div style={{
+          width: '100%',
+          maxWidth: '400px',
+          padding: '40px',
+          backgroundColor: '#ffffff',
+          borderRadius: '8px',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+        }}>
+          <div style={{ textAlign: 'center', marginBottom: '30px' }}>
+            <h2 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#333',
+              marginBottom: '8px'
+            }}>
+              Create Account
+            </h2>
+            <p style={{ fontSize: '14px', color: '#666' }}>
+              Start your culinary journey with us.
+            </p>
+          </div>
 
-        <form onSubmit={handleSubmit} noValidate className="space-y-4">
-          <motion.div variants={fadeIn('up', 0.2)}>
-            <input
-              type="text"
-              name="name"
-              placeholder="Full Name"
-              value={data.name}
-              onChange={handleChange}
-              required
-              className="w-full input"
-            />
-          </motion.div>
-          <motion.div variants={fadeIn('up', 0.3)}>
-            <input
-              type="email"
-              name="email"
-              placeholder="Email"
-              value={data.email}
-              onChange={handleChange}
-              required
-              className="w-full input"
-            />
-          </motion.div>
-          <motion.div variants={fadeIn('up', 0.4)}>
-            <input
-              type="password"
-              name="password"
-              placeholder="Password"
-              value={data.password}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full input"
-            />
-          </motion.div>
-          <motion.div variants={fadeIn('up', 0.5)}>
-            <input
-              type="password"
-              name="confirmPassword"
-              placeholder="Confirm Password"
-              value={data.confirmPassword}
-              onChange={handleChange}
-              required
-              minLength={6}
-              className="w-full input"
-            />
-          </motion.div>
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div>
+              <input
+                type="text"
+                name="name"
+                placeholder="Full Name"
+                value={data.name}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              />
+            </div>
+            <div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={data.email}
+                onChange={handleChange}
+                required
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                name="password"
+                placeholder="Password"
+                value={data.password}
+                onChange={handleChange}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              />
+            </div>
+            <div>
+              <input
+                type="password"
+                name="confirmPassword"
+                placeholder="Confirm Password"
+                value={data.confirmPassword}
+                onChange={handleChange}
+                required
+                minLength={6}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  border: '1px solid #e0e0e0',
+                  borderRadius: '4px',
+                  fontSize: '14px',
+                  outline: 'none'
+                }}
+                onFocus={(e) => e.target.style.borderColor = '#4caf50'}
+                onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
+              />
+            </div>
 
-          {error && (
-            <motion.p 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="text-red-400 text-center font-semibold pt-2"
-            >
-              {error}
-            </motion.p>
-          )}
+            {error && (
+              <p style={{
+                color: '#ff4444',
+                textAlign: 'center',
+                fontSize: '14px',
+                margin: '0'
+              }}>
+                {error}
+              </p>
+            )}
 
-          <motion.div variants={fadeIn('up', 0.6)} className="!mt-8">
-            <button 
-              type="submit" 
-              disabled={isLoading}
-              className="w-full font-kalnia text-lg px-8 py-3 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 rounded-lg btn-primary"
-            >
-              {isLoading ? 'Creating Account...' : 'Register'}
-            </button>
-          </motion.div>
-        </form>
+            <div style={{ marginTop: '8px' }}>
+              <button
+                type="submit"
+                disabled={isLoading}
+                style={{
+                  width: '100%',
+                  padding: '12px',
+                  backgroundColor: isLoading ? '#cccccc' : '#4caf50',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  fontSize: '16px',
+                  fontWeight: '500',
+                  cursor: isLoading ? 'not-allowed' : 'pointer',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLoading) {
+                    e.target.style.backgroundColor = '#45a049';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isLoading) {
+                    e.target.style.backgroundColor = '#4caf50';
+                  }
+                }}
+              >
+                {isLoading ? 'Creating Account...' : 'Register'}
+              </button>
+            </div>
+          </form>
 
-  <motion.p variants={fadeIn('up', 0.7)} className="text-center" style={{ color: 'var(--muted)' }}>
-          Already have an account?{' '}
-          <Link to="/login" className="font-bold hover:underline" style={{ color: 'var(--accent)' }}>
-            Login here
-          </Link>
-          .
-        </motion.p>
-      </motion.div>
+          <p style={{
+            textAlign: 'center',
+            fontSize: '14px',
+            color: '#666',
+            marginTop: '20px'
+          }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{
+              color: '#4caf50',
+              fontWeight: '500',
+              textDecoration: 'none'
+            }}>
+              Login here
+            </Link>
+            .
+          </p>
+        </div>
+      </main>
+      <Footer />
     </div>
   );
 }

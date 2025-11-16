@@ -10,9 +10,9 @@ const generateToken = (res, userId) => {
   });
 
   res.cookie('jwt', token, {
-    httpOnly: modeEnv !== 'development',
-    secure: modeEnv !== 'development', // Use secure cookies in production
-    sameSite: 'strict', // Prevent CSRF attacks
+    httpOnly: true, // Always httpOnly for security
+    secure: modeEnv === 'production', // Use secure cookies in production only
+    sameSite: modeEnv === 'production' ? 'strict' : 'lax', // Lax for development to allow cross-origin
     maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
   });
 };

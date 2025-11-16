@@ -79,6 +79,7 @@ const getUserProfile = asyncHandler(async (req, res) => {
       _id: user._id,
       name: user.name,
       email: user.email,
+      dietaryPreferences: user.dietaryPreferences || [],
     });
   } else {
     res.status(404);
@@ -93,11 +94,21 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   const user = await User.findById(req.user._id);
 
   if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
+    // Handle password change
+    if (req.body.currentPassword && req.body.newPassword) {
+      // Verify current password
+      const isPasswordValid = await user.matchPassword(req.body.currentPassword);
+      if (!isPasswordValid) {
+        res.status(401);
+        throw new Error('Current password is incorrect');
+      }
+      // Set new password
+      user.password = req.body.newPassword;
+    }
 
-    if (req.body.password) {
-      user.password = req.body.password;
+    // Handle dietary preferences update
+    if (req.body.dietaryPreferences !== undefined) {
+      user.dietaryPreferences = req.body.dietaryPreferences || [];
     }
 
     const updatedUser = await user.save();
@@ -106,6 +117,7 @@ const updateUserProfile = asyncHandler(async (req, res) => {
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
+      dietaryPreferences: updatedUser.dietaryPreferences || [],
     });
   } else {
     res.status(404);
