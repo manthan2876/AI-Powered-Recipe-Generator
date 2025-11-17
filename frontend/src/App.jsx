@@ -15,6 +15,7 @@ import { AuthProvider } from "./context/AuthContext";
 
 import LandingPage from "./pages/LandingPage";
 import ProfilePage from "./pages/ProfilePage";
+import GoogleAuthSuccessPage from "./pages/GoogleAuthSuccessPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/auth/google/success" element={<GoogleAuthSuccessPage />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/manage-account" element={<ManageAccount />} />
         </Routes>

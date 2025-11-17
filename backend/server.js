@@ -5,6 +5,7 @@ dotenv.config();
 import connectDB from './config/db.js';
 import cookieParser from 'cookie-parser';
 import cors from "cors";
+import passport from './config/passport.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 import userRoutes from './routes/userRoutes.js';
 import recipeRoutes from './routes/recipeRoutes.js';
@@ -29,6 +30,9 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(cookieParser());
+
+// Initialize Passport
+app.use(passport.initialize());
 
 app.use('/api/users', userRoutes);
 app.use('/api/recipes', recipeRoutes);

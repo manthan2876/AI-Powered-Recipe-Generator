@@ -1,4 +1,6 @@
 import asyncHandler from 'express-async-handler';
+import passport from 'passport';
+import jwt from 'jsonwebtoken';
 import User from '../models/userModel.js';
 import generateToken from '../utils/generateToken.js';
 
@@ -10,7 +12,18 @@ const authUser = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ email });
 
-  if (user && (await user.matchPassword(password))) {
+  if (!user) {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
+
+  // Check if user is OAuth-only (no password)
+  if (!user.password) {
+    res.status(401);
+    throw new Error('This account uses Google sign-in. Please use Google to sign in.');
+  }
+
+  if (await user.matchPassword(password)) {
     generateToken(res, user._id);
 
     res.json({
@@ -96,14 +109,27 @@ const updateUserProfile = asyncHandler(async (req, res) => {
   if (user) {
     // Handle password change
     if (req.body.currentPassword && req.body.newPassword) {
-      // Verify current password
-      const isPasswordValid = await user.matchPassword(req.body.currentPassword);
-      if (!isPasswordValid) {
-        res.status(401);
-        throw new Error('Current password is incorrect');
+      // If user has a password, verify current password
+      if (user.password) {
+        const isPasswordValid = await user.matchPassword(req.body.currentPassword);
+        if (!isPasswordValid) {
+          res.status(401);
+          throw new Error('Current password is incorrect');
+        }
+      } else {
+        // OAuth user setting password for the first time - no need to verify current password
+        // Just verify they provided a current password (can be any value or empty for OAuth users)
       }
       // Set new password
       user.password = req.body.newPassword;
+    } else if (req.body.newPassword && !req.body.currentPassword) {
+      // Allow OAuth users to set password without current password
+      if (!user.password) {
+        user.password = req.body.newPassword;
+      } else {
+        res.status(400);
+        throw new Error('Current password is required to change password');
+      }
     }
 
     // Handle dietary preferences update
@@ -124,10 +150,75 @@ const updateUserProfile = asyncHandler(async (req, res) => {
     throw new Error('User not found');
   }
 });
+// @desc    Google OAuth authentication
+// @route   GET /api/users/auth/google
+// @access  Public
+const googleAuth = passport.authenticate('google', {
+  scope: ['profile', 'email'],
+});
+
+// @desc    Google OAuth callback
+// @route   GET /api/users/auth/google/callback
+// @access  Public
+const googleCallback = (req, res, next) => {
+  passport.authenticate('google', { session: false }, (err, user, info) => {
+    if (err) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent(err.message || 'Authentication failed')}`);
+    }
+
+    if (!user) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent('Authentication failed')}`);
+    }
+
+    try {
+      generateToken(res, user._id);
+      
+      // Redirect to frontend with success
+      const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+      res.redirect(`${frontendUrl}/auth/google/success?token=success`);
+    } catch (error) {
+      return res.redirect(`${process.env.FRONTEND_URL || 'http://localhost:5173'}/login?error=${encodeURIComponent('Failed to generate token')}`);
+    }
+  })(req, res, next);
+};
+
+// @desc    Get user data after Google OAuth success
+// @route   GET /api/users/auth/google/success
+// @access  Private (via cookie)
+const googleAuthSuccess = asyncHandler(async (req, res) => {
+  // This endpoint is called after successful OAuth to get user data
+  // The token is already set in cookie from the callback
+  const token = req.cookies.jwt;
+  
+  if (!token) {
+    res.status(401);
+    throw new Error('Not authorized');
+  }
+
+  // User should be set by authMiddleware if token is valid
+  // But we'll get it from the token directly
+  const decoded = jwt.verify(token, process.env.JWT_SECRET || 'abc123');
+  const user = await User.findById(decoded.userId).select('-password');
+
+  if (user) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } else {
+    res.status(404);
+    throw new Error('User not found');
+  }
+});
+
 export {
   authUser,
   registerUser,
   logoutUser,
   getUserProfile,
   updateUserProfile,
+  googleAuth,
+  googleCallback,
+  googleAuthSuccess,
 };

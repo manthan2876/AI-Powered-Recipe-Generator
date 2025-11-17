@@ -10,6 +10,11 @@ Setup (MongoDB Compass + Local)
    JWT_SECRET=change_me
    NODE_ENV=development
    PORT=5000
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_CALLBACK_URL=http://localhost:5000/api/users/auth/google/callback
+   FRONTEND_URL=http://localhost:5173
+   BACKEND_URL=http://localhost:5000
 
 3) Start servers from project root
    npm install
@@ -47,7 +52,11 @@ This is the backend server for the AI-Powered Recipe Generator application. It p
 ### Users
 
 - `POST /api/users` - Register a new user
-- `POST /api/users/login` - Authenticate user & get token
+- `POST /api/users/auth` - Authenticate user & get token
+- `GET /api/users/auth/google` - Initiate Google OAuth login
+- `GET /api/users/auth/google/callback` - Google OAuth callback
+- `GET /api/users/auth/google/success` - Get user data after Google OAuth success
+- `POST /api/users/logout` - Logout user
 - `GET /api/users/profile` - Get user profile
 - `PUT /api/users/profile` - Update user profile
 
@@ -98,7 +107,20 @@ This is the backend server for the AI-Powered Recipe Generator application. It p
    JWT_SECRET=your_jwt_secret
    AI_MODEL_ENDPOINT=http://localhost:5001/api/generate
    RETRIEVAL_MODEL_ENDPOINT=http://localhost:5001/api/search
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   GOOGLE_CALLBACK_URL=http://localhost:5000/api/users/auth/google/callback
+   FRONTEND_URL=http://localhost:5173
+   BACKEND_URL=http://localhost:5000
    ```
+
+   **Google OAuth Setup:**
+   1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+   2. Create a new project or select an existing one
+   3. Enable the Google+ API
+   4. Go to "Credentials" and create OAuth 2.0 Client ID
+   5. Add authorized redirect URI: `http://localhost:5000/api/users/auth/google/callback` (or your production URL)
+   6. Copy the Client ID and Client Secret to your `.env` file
 
 4. Start the server
    ```bash
@@ -119,8 +141,11 @@ These models are accessed through API endpoints defined in the `aiService.js` fi
 ### User
 - `name`: String
 - `email`: String (unique)
-- `password`: String (hashed)
+- `password`: String (hashed, optional for OAuth users)
+- `googleId`: String (unique, for Google OAuth users)
 - `isAdmin`: Boolean
+- `savedRecipes`: Array of ObjectIds (reference to Recipe)
+- `dietaryPreferences`: Array of Strings
 
 ### Recipe
 - `user`: ObjectId (reference to User)
@@ -154,6 +179,19 @@ The application uses a custom error handling middleware that returns appropriate
 ## Authentication
 
 The application uses JSON Web Tokens (JWT) for authentication. Protected routes require a valid token in the Authorization header.
+
+### Authentication Methods
+
+1. **Email/Password**: Traditional email and password authentication
+2. **Google OAuth**: Sign in with Google account. Users can link their Google account to an existing email account or create a new account.
+
+### OAuth Flow
+
+1. User clicks "Continue with Google" on login/register page
+2. User is redirected to Google for authentication
+3. After successful authentication, Google redirects back to the callback URL
+4. Backend creates/updates user and sets JWT token in HTTP-only cookie
+5. User is redirected to frontend success page which fetches user data and completes login
 
 ## Contributing
 
