@@ -1,9 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { submitReview, toggleFavorite } from "../services/recipes";
+import { generateShoppingListFromRecipe } from "../services/shoppingLists";
 
 const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
   const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [currentRecipe, setCurrentRecipe] = useState(recipe);
   const [isSaved, setIsSaved] = useState(recipe?.isSaved || false);
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -12,6 +15,7 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
   const [comment, setComment] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userReview, setUserReview] = useState(null);
+  const [isGeneratingList, setIsGeneratingList] = useState(false);
 
   useEffect(() => {
     if (recipe) {
@@ -95,6 +99,29 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
     }
   };
 
+  const handleGenerateShoppingList = async (e) => {
+    e.stopPropagation();
+    
+    if (!user) {
+      alert("Please login to generate shopping lists");
+      return;
+    }
+
+    setIsGeneratingList(true);
+    try {
+      const shoppingList = await generateShoppingListFromRecipe(currentRecipe);
+      // Close the recipe detail modal
+      onClose();
+      // Navigate to shopping lists page
+      navigate("/shopping-lists");
+    } catch (error) {
+      console.error("Error generating shopping list:", error);
+      alert(error.message || "Failed to generate shopping list. Please try again.");
+    } finally {
+      setIsGeneratingList(false);
+    }
+  };
+
   const formatTime = (minutes) => {
     if (!minutes) return "N/A";
     if (minutes < 60) return `${minutes} min`;
@@ -130,9 +157,10 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
         width: '100%',
         maxHeight: '90vh',
         overflow: 'auto',
-        padding: '30px',
+        padding: 'clamp(16px, 4vw, 30px)',
         position: 'relative',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.3)'
+        boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
+        margin: '10px'
       }}>
         <button
           onClick={onClose}
@@ -162,47 +190,80 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
         </button>
 
         {/* Header with Save Button */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }} className="recipe-detail-header">
           <h2 style={{
-            fontSize: '28px',
+            fontSize: 'clamp(20px, 5vw, 28px)',
             fontWeight: 'bold',
             color: '#333',
             margin: 0,
-            flex: 1,
-            paddingRight: '40px'
+            flex: 1
           }}>
             {currentRecipe.title}
           </h2>
           {user && (
-            <button
-              onClick={handleSave}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: isSaved ? '#ff4444' : '#f0f0f0',
-                color: isSaved ? '#ffffff' : '#333',
-                border: 'none',
-                borderRadius: '4px',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                fontSize: '14px',
-                fontWeight: '500'
-              }}
-              aria-label={isSaved ? "Unsave recipe" : "Save recipe"}
-            >
-              <svg
-                width="16"
-                height="16"
-                viewBox="0 0 24 24"
-                fill={isSaved ? 'currentColor' : 'none'}
-                stroke="currentColor"
-                strokeWidth="2"
+            <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+              <button
+                onClick={handleGenerateShoppingList}
+                disabled={isGeneratingList}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: isGeneratingList ? '#cccccc' : '#4caf50',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: isGeneratingList ? 'not-allowed' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'background-color 0.2s'
+                }}
+                aria-label="Generate shopping list"
               >
-                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-              </svg>
-              {isSaved ? 'Saved' : 'Save'}
-            </button>
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M9 11l3 3L22 4"></path>
+                  <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                </svg>
+                {isGeneratingList ? 'Generating...' : 'Generate Shopping List'}
+              </button>
+              <button
+                onClick={handleSave}
+                style={{
+                  padding: '8px 16px',
+                  backgroundColor: isSaved ? '#ff4444' : '#f0f0f0',
+                  color: isSaved ? '#ffffff' : '#333',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+                aria-label={isSaved ? "Unsave recipe" : "Save recipe"}
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill={isSaved ? 'currentColor' : 'none'}
+                  stroke="currentColor"
+                  strokeWidth="2"
+                >
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                </svg>
+                {isSaved ? 'Saved' : 'Save'}
+              </button>
+            </div>
           )}
         </div>
 
@@ -213,7 +274,7 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
             alt={currentRecipe.title}
             style={{
               width: '100%',
-              height: '300px',
+              height: 'clamp(200px, 40vw, 300px)',
               objectFit: 'cover',
               borderRadius: '8px',
               marginBottom: '24px'
@@ -224,7 +285,7 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
         {/* Recipe Details Grid */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 150px), 1fr))',
           gap: '16px',
           marginBottom: '24px',
           padding: '16px',
@@ -594,6 +655,18 @@ const RecipeDetail = ({ recipe, onClose, onUpdate }) => {
             </div>
           )}
         </div>
+
+        <style>{`
+          @media (min-width: 640px) {
+            .recipe-detail-header {
+              flex-direction: row !important;
+              align-items: flex-start !important;
+            }
+            .recipe-detail-header h2 {
+              padding-right: 40px !important;
+            }
+          }
+        `}</style>
       </div>
     </div>
   );

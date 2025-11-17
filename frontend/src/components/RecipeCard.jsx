@@ -9,7 +9,7 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
 
   useEffect(() => {
     setIsSaved(recipe.isSaved || false);
-  }, [recipe.isSaved]);
+  }, [recipe.isSaved, recipe._id]);
 
   const handleSave = async (e) => {
     e.stopPropagation();
@@ -46,6 +46,7 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
     <div
       style={{
         display: 'flex',
+        flexDirection: 'column',
         gap: '16px',
         backgroundColor: '#ffffff',
         borderRadius: '8px',
@@ -54,6 +55,7 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
         cursor: 'pointer',
         transition: 'box-shadow 0.2s'
       }}
+      className="recipe-card"
       onClick={onClick}
       onMouseEnter={(e) => {
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
@@ -63,13 +65,13 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
       }}
     >
       {/* Recipe Image */}
-      <div style={{ flexShrink: 0 }}>
+      <div style={{ flexShrink: 0, width: '100%' }} className="recipe-card-image">
         <img
           src={recipe.image || "/default-recipe.jpg"}
           alt={recipe.title}
           style={{
-            width: '128px',
-            height: '128px',
+            width: '100%',
+            height: '200px',
             objectFit: 'cover',
             borderRadius: '8px'
           }}
@@ -109,9 +111,10 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
       <div style={{
         flexShrink: 0,
         display: 'flex',
-        flexDirection: 'column',
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
         gap: '8px'
-      }}>
+      }} className="recipe-card-actions">
         <button
           onClick={handleSave}
           style={{
@@ -181,6 +184,24 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
           </svg>
         </button>
       </div>
+
+      <style>{`
+        @media (min-width: 640px) {
+          .recipe-card {
+            flex-direction: row !important;
+          }
+          .recipe-card-image {
+            width: 128px !important;
+          }
+          .recipe-card-image img {
+            width: 128px !important;
+            height: 128px !important;
+          }
+          .recipe-card-actions {
+            flex-direction: column !important;
+          }
+        }
+      `}</style>
     </div>
   );
 };

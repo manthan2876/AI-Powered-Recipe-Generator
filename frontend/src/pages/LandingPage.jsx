@@ -10,13 +10,13 @@ function LandingPage() {
       <main style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
         {/* Hero Section */}
         <section style={{
-          padding: '80px 20px',
+          padding: 'clamp(40px, 8vw, 80px) clamp(16px, 4vw, 20px)',
           textAlign: 'center',
           maxWidth: '800px',
           margin: '0 auto'
         }}>
           <h1 style={{
-            fontSize: '48px',
+            fontSize: 'clamp(28px, 6vw, 48px)',
             fontWeight: 'bold',
             color: '#333',
             marginBottom: '20px',
@@ -25,7 +25,7 @@ function LandingPage() {
             Cook Something Delicious with What You Have
           </h1>
           <p style={{
-            fontSize: '18px',
+            fontSize: 'clamp(16px, 3vw, 18px)',
             color: '#666',
             marginBottom: '40px',
             lineHeight: '1.6'
@@ -54,13 +54,13 @@ function LandingPage() {
 
         {/* Features Section */}
         <section style={{
-          padding: '60px 20px',
+          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)',
           backgroundColor: '#ffffff',
           maxWidth: '1200px',
           margin: '0 auto'
         }}>
           <h2 style={{
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             fontWeight: 'bold',
             textAlign: 'center',
             marginBottom: '40px',
@@ -70,8 +70,8 @@ function LandingPage() {
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '30px'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))',
+            gap: 'clamp(20px, 4vw, 30px)'
           }}>
             <div style={{
               padding: '30px',
@@ -117,13 +117,13 @@ function LandingPage() {
 
         {/* About Section */}
         <section style={{
-          padding: '60px 20px',
+          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)',
           textAlign: 'center',
           maxWidth: '800px',
           margin: '0 auto'
         }}>
           <h2 style={{
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             fontWeight: 'bold',
             marginBottom: '20px',
             color: '#333'
@@ -131,7 +131,7 @@ function LandingPage() {
             About Us
           </h2>
           <p style={{
-            fontSize: '16px',
+            fontSize: 'clamp(14px, 3vw, 16px)',
             color: '#666',
             lineHeight: '1.8',
             marginBottom: '30px'

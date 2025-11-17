@@ -42,7 +42,7 @@ const SavedRecipes = () => {
       <Header />
       <main style={{
         flex: 1,
-        padding: '40px 20px',
+        padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
         backgroundColor: '#f5f5f5'
       }}>
         <div style={{
@@ -51,7 +51,7 @@ const SavedRecipes = () => {
         }}>
           <header style={{ marginBottom: '40px', textAlign: 'center' }}>
             <h1 style={{
-              fontSize: '32px',
+              fontSize: 'clamp(24px, 5vw, 32px)',
               fontWeight: 'bold',
               color: '#333'
             }}>
@@ -94,7 +94,7 @@ const SavedRecipes = () => {
           ) : (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 300px), 1fr))',
               gap: '24px'
             }}>
               {recipes.map((recipe) => (

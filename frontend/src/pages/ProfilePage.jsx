@@ -136,7 +136,7 @@ export default function RecipeProfilePage() {
       <Header />
       <main style={{
         flex: 1,
-        padding: '40px 20px',
+        padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
         backgroundColor: '#f5f5f5'
       }}>
         <div style={{
@@ -145,7 +145,7 @@ export default function RecipeProfilePage() {
           backgroundColor: '#ffffff',
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-          padding: '40px'
+          padding: 'clamp(24px, 6vw, 40px)'
         }}>
           {loading ? (
             <p style={{ textAlign: 'center', color: '#666', padding: '40px' }}>Loading profile...</p>
@@ -181,31 +181,40 @@ export default function RecipeProfilePage() {
               )}
               <div style={{
                 display: 'flex',
-                alignItems: 'center',
-                gap: '20px',
+                flexDirection: 'column',
+                alignItems: 'flex-start',
+                gap: '16px',
                 marginBottom: '30px',
                 paddingBottom: '20px',
                 borderBottom: '1px solid #e0e0e0'
-              }}>
+              }} className="profile-header">
                 <div style={{
-                  width: '80px',
-                  height: '80px',
-                  borderRadius: '50%',
-                  backgroundColor: '#4caf50',
                   display: 'flex',
                   alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#ffffff',
-                  fontSize: '24px',
-                  fontWeight: 'bold'
+                  gap: '20px',
+                  width: '100%'
                 }}>
-                  U
-                </div>
-                <div style={{ flex: 1 }}>
-                  <h2 style={{ fontSize: '24px', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
-                    Profile Settings
-                  </h2>
-                  <p style={{ fontSize: '14px', color: '#666' }}>Manage your password and dietary preferences</p>
+                  <div style={{
+                    width: 'clamp(60px, 12vw, 80px)',
+                    height: 'clamp(60px, 12vw, 80px)',
+                    borderRadius: '50%',
+                    backgroundColor: '#4caf50',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    fontSize: 'clamp(18px, 4vw, 24px)',
+                    fontWeight: 'bold',
+                    flexShrink: 0
+                  }}>
+                    U
+                  </div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <h2 style={{ fontSize: 'clamp(20px, 4vw, 24px)', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
+                      Profile Settings
+                    </h2>
+                    <p style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', color: '#666' }}>Manage your password and dietary preferences</p>
+                  </div>
                 </div>
                 <button
                   onClick={handleEdit}
@@ -424,10 +433,19 @@ export default function RecipeProfilePage() {
                 </button>
               </div>
             )}
-          </form>
+            </form>
             </>
           )}
         </div>
+
+        <style>{`
+          @media (min-width: 640px) {
+            .profile-header {
+              flex-direction: row !important;
+              align-items: center !important;
+            }
+          }
+        `}</style>
       </main>
       <Footer />
     </div>

@@ -20,7 +20,9 @@ export async function deleteRecipe(id) {
 }
 
 export async function getRecipeById(id) {
-  const res = await fetch(`${API_BASE}/api/recipes/${id}`);
+  const res = await fetch(`${API_BASE}/api/recipes/${id}`, {
+    credentials: 'include'
+  });
   if (!res.ok) throw new Error('Failed to fetch recipe');
   return res.json();
 }
@@ -63,7 +65,9 @@ export async function searchRecipesByIngredients(ingredients = [], filters = {})
     params.append('isGenerated', filters.isGenerated.toString());
   }
   
-  const res = await fetch(`${API_BASE}/api/recipes/search?${params.toString()}`);
+  const res = await fetch(`${API_BASE}/api/recipes/search?${params.toString()}`, {
+    credentials: 'include'
+  });
   if (!res.ok) return [];
   return res.json();
 }

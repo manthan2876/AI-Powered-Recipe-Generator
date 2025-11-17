@@ -59,20 +59,20 @@ export default function RegisterPage() {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        padding: '40px 20px',
+        padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
         backgroundColor: '#f5f5f5'
       }}>
         <div style={{
           width: '100%',
           maxWidth: '400px',
-          padding: '40px',
+          padding: 'clamp(24px, 6vw, 40px)',
           backgroundColor: '#ffffff',
           borderRadius: '8px',
           boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
         }}>
           <div style={{ textAlign: 'center', marginBottom: '30px' }}>
             <h2 style={{
-              fontSize: '32px',
+              fontSize: 'clamp(24px, 5vw, 32px)',
               fontWeight: 'bold',
               color: '#333',
               marginBottom: '8px'

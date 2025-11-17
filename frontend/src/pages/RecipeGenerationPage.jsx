@@ -1,13 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
+import { useNavigate } from "react-router-dom";
 import { generateRecipe } from "../services/recipeGeneration";
+import { generateShoppingListFromRecipe } from "../services/shoppingLists";
+import { AuthContext } from "../context/AuthContext";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 
 function RecipeGenerationPage() {
+  const { user } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [ingredientsInput, setIngredientsInput] = useState("");
   const [generatedRecipe, setGeneratedRecipe] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [isGeneratingList, setIsGeneratingList] = useState(false);
 
   const handleGenerate = async (e) => {
     e.preventDefault();
@@ -43,12 +49,35 @@ function RecipeGenerationPage() {
   // 🟢 We also need to update the recipeGeneration.js service
   //    (See note below this code block)
 
+  const handleGenerateShoppingList = async () => {
+    if (!user) {
+      alert("Please login to generate shopping lists");
+      return;
+    }
+
+    if (!generatedRecipe) {
+      return;
+    }
+
+    setIsGeneratingList(true);
+    try {
+      await generateShoppingListFromRecipe(generatedRecipe);
+      // Navigate to shopping lists page
+      navigate("/shopping-lists");
+    } catch (error) {
+      console.error("Error generating shopping list:", error);
+      alert(error.message || "Failed to generate shopping list. Please try again.");
+    } finally {
+      setIsGeneratingList(false);
+    }
+  };
+
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
       <main style={{
         flex: 1,
-        padding: '40px 20px',
+        padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)',
         backgroundColor: '#f5f5f5'
       }}>
         <div style={{
@@ -133,7 +162,7 @@ function RecipeGenerationPage() {
               border: '1px solid #e0e0e0'
             }}>
               <h3 style={{
-                fontSize: '24px',
+                fontSize: 'clamp(20px, 4vw, 24px)',
                 fontWeight: 'bold',
                 color: '#333',
                 marginBottom: '16px' // Adjusted margin
@@ -196,8 +225,8 @@ function RecipeGenerationPage() {
               {/* This is the existing 2-column grid */}
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '30px'
+                gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
+                gap: 'clamp(20px, 4vw, 30px)'
               }}>
                 <div>
                   <h4 style={{
@@ -270,8 +299,51 @@ function RecipeGenerationPage() {
                 </div>
               </div>
 
-              {/* This is the existing "Generate Another" button */}
-              <div style={{ marginTop: '30px', textAlign: 'right' }}>
+              {/* Action Buttons */}
+              <div style={{ marginTop: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                {user && (
+                  <button
+                    onClick={handleGenerateShoppingList}
+                    disabled={isGeneratingList}
+                    style={{
+                      padding: '10px 20px',
+                      backgroundColor: isGeneratingList ? '#cccccc' : '#4caf50',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: isGeneratingList ? 'not-allowed' : 'pointer',
+                      fontSize: '14px',
+                      fontWeight: '500',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'background-color 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isGeneratingList) {
+                        e.target.style.backgroundColor = '#45a049';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isGeneratingList) {
+                        e.target.style.backgroundColor = '#4caf50';
+                      }
+                    }}
+                  >
+                    <svg
+                      width="16"
+                      height="16"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                    >
+                      <path d="M9 11l3 3L22 4"></path>
+                      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+                    </svg>
+                    {isGeneratingList ? 'Generating...' : 'Generate Shopping List'}
+                  </button>
+                )}
                 <button
                   onClick={() => setGeneratedRecipe(null)}
                   style={{
@@ -282,7 +354,8 @@ function RecipeGenerationPage() {
                     borderRadius: '4px',
                     cursor: 'pointer',
                     fontSize: '14px',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    marginLeft: user ? 'auto' : '0'
                   }}
                   onMouseEnter={(e) => {
                     e.target.style.backgroundColor = '#f0f0f0';

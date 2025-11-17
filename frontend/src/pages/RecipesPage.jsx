@@ -24,6 +24,7 @@ export default function RecipesPage() {
   const [showBanner, setShowBanner] = useState(true);
   const [selectedRecipe, setSelectedRecipe] = useState(null);
   const [userDietaryPreferences, setUserDietaryPreferences] = useState([]);
+  const [showSidebar, setShowSidebar] = useState(false);
   
   // Filter states
   const [activeFilters, setActiveFilters] = useState({
@@ -197,16 +198,61 @@ export default function RecipesPage() {
     <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       <Header selectedIngredientsCount={totalSelected} recipeCount={recipeCount} />
       
-      <div style={{ display: 'flex', minHeight: 'calc(100vh - 60px)' }}>
+      {/* Mobile Sidebar Toggle Button */}
+      <button
+        onClick={() => setShowSidebar(!showSidebar)}
+        style={{
+          display: 'none',
+          position: 'fixed',
+          bottom: '20px',
+          right: '20px',
+          width: '56px',
+          height: '56px',
+          borderRadius: '50%',
+          backgroundColor: '#4caf50',
+          color: '#ffffff',
+          border: 'none',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+          cursor: 'pointer',
+          zIndex: 90,
+          alignItems: 'center',
+          justifyContent: 'center',
+          fontSize: '24px'
+        }}
+        aria-label="Toggle ingredients sidebar"
+      >
+        {showSidebar ? '×' : '☰'}
+      </button>
+      
+      <div style={{ display: 'flex', minHeight: 'calc(100vh - 60px)', position: 'relative' }}>
+        {/* Mobile Overlay */}
+        {showSidebar && (
+          <div
+            onClick={() => setShowSidebar(false)}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              zIndex: 95
+            }}
+          />
+        )}
+        
         {/* Left Sidebar */}
         <aside style={{
           width: '320px',
+          maxWidth: '100%',
           backgroundColor: '#ffffff',
           borderRight: '1px solid #e0e0e0',
           overflowY: 'auto',
           height: 'calc(100vh - 60px)',
-          padding: '20px'
-        }}>
+          padding: '20px',
+          position: 'relative',
+          zIndex: 96
+        }} className="sidebar">
           {/* Assumed Ingredients Banner */}
           {showBanner && (
             <div style={{
@@ -343,7 +389,8 @@ export default function RecipesPage() {
           flex: 1,
           overflowY: 'auto',
           height: 'calc(100vh - 60px)',
-          padding: '24px'
+          padding: 'clamp(16px, 4vw, 24px)',
+          minWidth: 0
         }}>
           {/* Filter Buttons */}
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '24px', position: 'relative' }}>
@@ -717,7 +764,7 @@ export default function RecipesPage() {
 
           {/* Recipe Count */}
           <h1 style={{
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             fontWeight: 'bold',
             color: '#333',
             marginBottom: '24px'
@@ -800,6 +847,33 @@ export default function RecipesPage() {
           onUpdate={handleRecipeUpdate}
         />
       )}
+
+      <style>{`
+        @media (max-width: 768px) {
+          .sidebar {
+            position: fixed !important;
+            left: ${showSidebar ? '0' : '-100%'} !important;
+            top: 60px !important;
+            width: 85% !important;
+            max-width: 320px !important;
+            height: calc(100vh - 60px) !important;
+            transition: left 0.3s ease !important;
+            box-shadow: 2px 0 8px rgba(0,0,0,0.2) !important;
+          }
+          button[aria-label="Toggle ingredients sidebar"] {
+            display: flex !important;
+          }
+        }
+        @media (min-width: 769px) {
+          .sidebar {
+            position: relative !important;
+            left: 0 !important;
+          }
+          button[aria-label="Toggle ingredients sidebar"] {
+            display: none !important;
+          }
+        }
+      `}</style>
     </div>
   );
 }

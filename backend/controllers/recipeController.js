@@ -20,9 +20,35 @@ const getRecipes = asyncHandler(async (req, res) => {
     : {};
 
   const count = await Recipe.countDocuments({ ...keyword });
-  const recipes = await Recipe.find({ ...keyword })
+  let recipes = await Recipe.find({ ...keyword })
     .limit(pageSize)
     .skip(pageSize * (page - 1));
+
+  // Add isSaved status for authenticated users
+  if (req.user && req.user._id) {
+    const user = await User.findById(req.user._id);
+    if (user && user.savedRecipes) {
+      const savedRecipeIds = user.savedRecipes.map(id => id.toString());
+      recipes = recipes.map(recipe => {
+        const recipeObj = recipe.toObject();
+        recipeObj.isSaved = savedRecipeIds.includes(recipeObj._id.toString());
+        return recipeObj;
+      });
+    } else {
+      recipes = recipes.map(recipe => {
+        const recipeObj = recipe.toObject();
+        recipeObj.isSaved = false;
+        return recipeObj;
+      });
+    }
+  } else {
+    // For non-authenticated users, set isSaved to false
+    recipes = recipes.map(recipe => {
+      const recipeObj = recipe.toObject();
+      recipeObj.isSaved = false;
+      return recipeObj;
+    });
+  }
 
   res.json({ recipes, page, pages: Math.ceil(count / pageSize) });
 });

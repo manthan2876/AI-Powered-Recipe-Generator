@@ -7,15 +7,15 @@ function HomePage() {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <Header />
-      <main style={{ flex: 1, backgroundColor: '#f5f5f5', padding: '40px 20px' }}>
+      <main style={{ flex: 1, backgroundColor: '#f5f5f5', padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)' }}>
         <section style={{
           maxWidth: '1200px',
           margin: '0 auto',
           textAlign: 'center',
-          padding: '60px 20px'
+          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)'
         }}>
           <h1 style={{
-            fontSize: '42px',
+            fontSize: 'clamp(28px, 6vw, 42px)',
             fontWeight: 'bold',
             color: '#333',
             marginBottom: '20px'
@@ -23,7 +23,7 @@ function HomePage() {
             Welcome to Your Recipe & Shopping List App
           </h1>
           <p style={{
-            fontSize: '18px',
+            fontSize: 'clamp(16px, 3vw, 18px)',
             color: '#666',
             marginBottom: '40px',
             maxWidth: '600px',
@@ -80,13 +80,13 @@ function HomePage() {
         <section style={{
           maxWidth: '1200px',
           margin: '0 auto',
-          padding: '60px 20px',
+          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)',
           backgroundColor: '#ffffff',
           borderRadius: '8px',
           marginTop: '40px'
         }}>
           <h2 style={{
-            fontSize: '32px',
+            fontSize: 'clamp(24px, 5vw, 32px)',
             fontWeight: 'bold',
             textAlign: 'center',
             marginBottom: '40px',
@@ -96,7 +96,7 @@ function HomePage() {
           </h2>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
             gap: '20px'
           }}>
             {[
