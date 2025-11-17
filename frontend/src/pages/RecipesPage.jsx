@@ -361,7 +361,7 @@ export default function RecipesPage() {
                         cursor: 'pointer',
                         backgroundColor: isSelected ? '#4caf50' : '#f0f0f0',
                         color: isSelected ? '#ffffff' : '#333',
-                        transition: 'all 0.2s',
+                        transition: 'all 0.3s ease',
                         textTransform: 'capitalize'
                       }}
                       onMouseEnter={(e) => {

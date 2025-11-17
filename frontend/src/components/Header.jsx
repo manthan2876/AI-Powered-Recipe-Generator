@@ -123,7 +123,7 @@ const Header = () => {
                     color: '#666',
                     border: 'none',
                     cursor: 'pointer',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => {
                     if (!showDropdown) {
@@ -166,7 +166,7 @@ const Header = () => {
                         textDecoration: 'none',
                         fontSize: '14px',
                         borderBottom: '1px solid #f0f0f0',
-                        transition: 'background-color 0.2s'
+                        transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -183,7 +183,7 @@ const Header = () => {
                         textDecoration: 'none',
                         fontSize: '14px',
                         borderBottom: '1px solid #f0f0f0',
-                        transition: 'background-color 0.2s'
+                        transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -200,7 +200,7 @@ const Header = () => {
                         textDecoration: 'none',
                         fontSize: '14px',
                         borderBottom: '1px solid #f0f0f0',
-                        transition: 'background-color 0.2s'
+                        transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -219,7 +219,7 @@ const Header = () => {
                         textAlign: 'left',
                         fontSize: '14px',
                         cursor: 'pointer',
-                        transition: 'background-color 0.2s'
+                        transition: 'all 0.3s ease'
                       }}
                       onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
                       onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -242,7 +242,8 @@ const Header = () => {
                   borderRadius: '4px',
                   textDecoration: 'none',
                   fontSize: '14px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = '#f5f5f5';
@@ -263,7 +264,8 @@ const Header = () => {
                   borderRadius: '4px',
                   textDecoration: 'none',
                   fontSize: '14px',
-                  fontWeight: '500'
+                  fontWeight: '500',
+                  transition: 'all 0.3s ease'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.backgroundColor = '#45a049';
@@ -308,7 +310,7 @@ const Header = () => {
                     textDecoration: 'none',
                     fontSize: '16px',
                     borderRadius: '4px',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -324,7 +326,7 @@ const Header = () => {
                     textDecoration: 'none',
                     fontSize: '16px',
                     borderRadius: '4px',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -340,7 +342,7 @@ const Header = () => {
                     textDecoration: 'none',
                     fontSize: '16px',
                     borderRadius: '4px',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -361,7 +363,7 @@ const Header = () => {
                     fontSize: '16px',
                     cursor: 'pointer',
                     borderRadius: '4px',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -384,7 +386,7 @@ const Header = () => {
                     fontSize: '16px',
                     fontWeight: '500',
                     textAlign: 'center',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
@@ -404,7 +406,7 @@ const Header = () => {
                     fontSize: '16px',
                     fontWeight: '500',
                     textAlign: 'center',
-                    transition: 'background-color 0.2s'
+                    transition: 'all 0.3s ease'
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
                   onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}

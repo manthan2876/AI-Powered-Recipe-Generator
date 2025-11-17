@@ -43,7 +43,7 @@ function LandingPage() {
               fontSize: '16px',
               fontWeight: '500',
               textDecoration: 'none',
-              transition: 'background-color 0.2s'
+              transition: 'all 0.3s ease'
             }}
             onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
             onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}
