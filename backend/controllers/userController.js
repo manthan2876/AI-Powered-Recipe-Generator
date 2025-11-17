@@ -1,8 +1,10 @@
 import asyncHandler from 'express-async-handler';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import User from '../models/userModel.js';
 import generateToken from '../utils/generateToken.js';
+import sendEmail from '../utils/sendEmail.js';
 
 // @desc    Auth user & get token
 // @route   POST /api/users/auth
@@ -212,6 +214,116 @@ const googleAuthSuccess = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Forgot password
+// @route   POST /api/users/forgot-password
+// @access  Public
+const forgotPassword = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    // Don't reveal if user exists or not for security
+    res.status(200).json({
+      message: 'If an account with that email exists, a password reset link has been sent.',
+    });
+    return;
+  }
+
+  // Check if user has a password (not OAuth-only)
+  if (!user.password) {
+    res.status(400);
+    throw new Error('This account uses Google sign-in. Please use Google to sign in.');
+  }
+
+  // Get reset token
+  const resetToken = user.getResetPasswordToken();
+
+  await user.save({ validateBeforeSave: false });
+
+  // Create reset URL
+  const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password/${resetToken}`;
+
+  // Email message
+  const message = `You requested a password reset. Please click the link below to reset your password:\n\n${resetUrl}\n\nThis link will expire in 10 minutes.\n\nIf you did not request this, please ignore this email.`;
+
+  const htmlMessage = `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+      <h2 style="color: #333;">Password Reset Request</h2>
+      <p>You requested a password reset for your account.</p>
+      <p>Please click the button below to reset your password:</p>
+      <a href="${resetUrl}" style="display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white; text-decoration: none; border-radius: 4px; margin: 20px 0;">Reset Password</a>
+      <p>Or copy and paste this link into your browser:</p>
+      <p style="word-break: break-all; color: #666;">${resetUrl}</p>
+      <p style="color: #999; font-size: 12px;">This link will expire in 10 minutes.</p>
+      <p style="color: #999; font-size: 12px;">If you did not request this, please ignore this email.</p>
+    </div>
+  `;
+
+  try {
+    await sendEmail({
+      email: user.email,
+      subject: 'Password Reset Request',
+      message: message,
+      html: htmlMessage,
+      resetUrl: resetUrl,
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset email sent successfully. Please check your email.',
+    });
+  } catch (error) {
+    console.error('Error sending email:', error);
+    // Clear the reset token if email fails
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    res.status(500);
+    throw new Error('Email could not be sent. Please try again later.');
+  }
+});
+
+// @desc    Reset password
+// @route   PUT /api/users/reset-password/:resetToken
+// @access  Public
+const resetPassword = asyncHandler(async (req, res) => {
+  // Get hashed token
+  const resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(req.params.resetToken)
+    .digest('hex');
+
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordExpire: { $gt: Date.now() },
+  });
+
+  if (!user) {
+    res.status(400);
+    throw new Error('Invalid or expired reset token');
+  }
+
+  // Validate password
+  if (!req.body.password || req.body.password.length < 6) {
+    res.status(400);
+    throw new Error('Password must be at least 6 characters long');
+  }
+
+  // Set new password
+  user.password = req.body.password;
+  user.resetPasswordToken = undefined;
+  user.resetPasswordExpire = undefined;
+
+  await user.save();
+
+  res.status(200).json({
+    success: true,
+    message: 'Password reset successful',
+  });
+});
+
 export {
   authUser,
   registerUser,
@@ -221,4 +333,6 @@ export {
   googleAuth,
   googleCallback,
   googleAuthSuccess,
+  forgotPassword,
+  resetPassword,
 };

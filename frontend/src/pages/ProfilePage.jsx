@@ -8,7 +8,7 @@ const dietaryOptions = ["Vegetarian", "Vegan", "Gluten-Free", "Dairy-Free", "Ket
 
 export default function RecipeProfilePage() {
   const { user } = useContext(AuthContext);
-  const [profile, setProfile] = useState({ dietaryPreferences: [] });
+  const [profile, setProfile] = useState({ name: '', dietaryPreferences: [] });
   const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({ 
     currentPassword: "", 
@@ -28,6 +28,7 @@ export default function RecipeProfilePage() {
         const userData = await getCurrentUser();
         if (userData) {
           setProfile({
+            name: userData.name || user?.name || '',
             dietaryPreferences: userData.dietaryPreferences || []
           });
           setForm({ 
@@ -114,6 +115,7 @@ export default function RecipeProfilePage() {
 
       const updated = await updateUserProfile(updateData);
       setProfile({
+        name: updated.name || profile.name || user?.name || '',
         dietaryPreferences: updated.dietaryPreferences || []
       });
       setEditMode(false);
@@ -207,11 +209,11 @@ export default function RecipeProfilePage() {
                     fontWeight: 'bold',
                     flexShrink: 0
                   }}>
-                    U
+                    {(profile.name || user?.name || 'U').charAt(0).toUpperCase()}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <h2 style={{ fontSize: 'clamp(20px, 4vw, 24px)', fontWeight: '600', color: '#333', marginBottom: '4px' }}>
-                      Profile Settings
+                      {profile.name || user?.name || 'Profile Settings'}
                     </h2>
                     <p style={{ fontSize: 'clamp(12px, 2.5vw, 14px)', color: '#666' }}>Manage your password and dietary preferences</p>
                   </div>

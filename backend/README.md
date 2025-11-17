@@ -15,6 +15,24 @@ Setup (MongoDB Compass + Local)
    GOOGLE_CALLBACK_URL=http://localhost:5000/api/users/auth/google/callback
    FRONTEND_URL=http://localhost:5173
    BACKEND_URL=http://localhost:5000
+   
+   # Email Configuration (for password reset)
+   # Option 1: Gmail (recommended for development)
+   SMTP_HOST=smtp.gmail.com
+   SMTP_PORT=587
+   SMTP_USER=your-email@gmail.com          # or SMTP_EMAIL
+   SMTP_PASS=your-app-password            # or SMTP_PASSWORD
+   SMTP_SECURE=false                      # set true if you use port 465
+   FROM_NAME=Recipe Generator
+   
+   # Option 2: Alternative email service
+   # SMTP_HOST=smtp.your-provider.com
+   # SMTP_PORT=587
+   # SMTP_USER=your-email@domain.com
+   # SMTP_PASS=your-password
+   
+   Note: For Gmail, you need to generate an "App Password" in your Google Account settings.
+   If email is not configured, the system will log the reset link to the console instead.
 
 3) Start servers from project root
    npm install

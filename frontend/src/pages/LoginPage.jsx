@@ -118,6 +118,15 @@ function LoginPage() {
                 onFocus={(e) => e.target.style.borderColor = '#4caf50'}
                 onBlur={(e) => e.target.style.borderColor = '#e0e0e0'}
               />
+              <div style={{ textAlign: 'right', marginTop: '8px' }}>
+                <Link to="/forgot-password" style={{
+                  fontSize: '14px',
+                  color: '#4caf50',
+                  textDecoration: 'none'
+                }}>
+                  Forgot Password?
+                </Link>
+              </div>
             </div>
 
             {error && (

@@ -73,7 +73,9 @@ export async function searchRecipesByIngredients(ingredients = [], filters = {})
 }
 
 export async function getAllIngredients() {
-  const res = await fetch(`${API_BASE}/api/recipes/ingredients`);
+  const res = await fetch(`${API_BASE}/api/recipes/ingredients`, {
+    credentials: 'include'
+  });
   if (!res.ok) return [];
   return res.json();
 }

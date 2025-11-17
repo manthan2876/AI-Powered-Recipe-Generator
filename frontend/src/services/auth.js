@@ -60,3 +60,31 @@ export async function updateUserProfile(data) {
   }
   return res.json();
 }
+
+export async function forgotPassword(email) {
+  const res = await fetch(`${API_BASE}/api/users/forgot-password`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ email }),
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to send password reset email');
+  }
+  return res.json();
+}
+
+export async function resetPassword(resetToken, password) {
+  const res = await fetch(`${API_BASE}/api/users/reset-password/${resetToken}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ password }),
+  });
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({}));
+    throw new Error(error.message || 'Failed to reset password');
+  }
+  return res.json();
+}
