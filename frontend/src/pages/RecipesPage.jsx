@@ -14,8 +14,8 @@ const filters = [
 export default function RecipesPage() {
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
-  const [allIngredients, setAllIngredients] = useState([]);
-  const [filteredIngredients, setFilteredIngredients] = useState([]);
+  const [ingredientCatalog, setIngredientCatalog] = useState([]);
+  const [filteredCatalog, setFilteredCatalog] = useState([]);
   const [selectedIngredients, setSelectedIngredients] = useState([]);
   const [ingredientSearch, setIngredientSearch] = useState("");
   const [recipes, setRecipes] = useState([]);
@@ -42,9 +42,9 @@ export default function RecipesPage() {
   useEffect(() => {
     const fetchIngredients = async () => {
       try {
-        const ingredients = await getAllIngredients();
-        setAllIngredients(ingredients);
-        setFilteredIngredients(ingredients);
+        const catalog = await getAllIngredients({ format: "categories" });
+        setIngredientCatalog(catalog);
+        setFilteredCatalog(catalog);
       } catch (error) {
         console.error("Error fetching ingredients:", error);
       }
@@ -75,15 +75,22 @@ export default function RecipesPage() {
   // Filter ingredients based on search
   useEffect(() => {
     if (ingredientSearch.trim() === "") {
-      setFilteredIngredients(allIngredients);
-    } else {
-      const searchLower = ingredientSearch.toLowerCase();
-      const filtered = allIngredients.filter(ing =>
-        ing.toLowerCase().includes(searchLower)
-      );
-      setFilteredIngredients(filtered);
+      setFilteredCatalog(ingredientCatalog);
+      return;
     }
-  }, [ingredientSearch, allIngredients]);
+
+    const searchLower = ingredientSearch.toLowerCase();
+    const filtered = ingredientCatalog
+      .map(category => ({
+        ...category,
+        items: category.items.filter((item) =>
+          item.toLowerCase().includes(searchLower)
+        ),
+      }))
+      .filter(category => category.items.length > 0);
+
+    setFilteredCatalog(filtered);
+  }, [ingredientSearch, ingredientCatalog]);
 
   // Search recipes when ingredients or filters change
   useEffect(() => {
@@ -341,44 +348,80 @@ export default function RecipesPage() {
               maxHeight: 'calc(100vh - 300px)',
               overflowY: 'auto'
             }}>
-              {filteredIngredients.length === 0 ? (
+              {filteredCatalog.length === 0 ? (
                 <p style={{ fontSize: '13px', color: '#666', padding: '12px' }}>
                   No ingredients found
                 </p>
               ) : (
-                filteredIngredients.map((ingredient) => {
-                  const isSelected = selectedIngredients.includes(ingredient);
-                  return (
-                    <button
-                      key={ingredient}
-                      onClick={() => handleIngredientToggle(ingredient)}
-                      style={{
-                        padding: '6px 12px',
-                        borderRadius: '4px',
-                        fontSize: '13px',
-                        fontWeight: '500',
-                        border: 'none',
-                        cursor: 'pointer',
-                        backgroundColor: isSelected ? '#4caf50' : '#f0f0f0',
-                        color: isSelected ? '#ffffff' : '#333',
-                        transition: 'all 0.3s ease',
-                        textTransform: 'capitalize'
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!isSelected) {
-                          e.target.style.backgroundColor = '#e0e0e0';
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!isSelected) {
-                          e.target.style.backgroundColor = '#f0f0f0';
-                        }
-                      }}
-                    >
-                      {ingredient}
-                    </button>
-                  );
-                })
+                filteredCatalog.map(category => (
+                  <div key={category.name} style={{ width: '100%' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', margin: '12px 0 6px' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <span style={{ fontSize: '14px', fontWeight: '600', color: '#222' }}>
+                          {category.name}
+                        </span>
+                        {category.tags && category.tags.length > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginTop: '4px' }}>
+                            {category.tags.map(tag => (
+                              <span
+                                key={tag}
+                                style={{
+                                  fontSize: '11px',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em',
+                                  padding: '2px 6px',
+                                  borderRadius: '999px',
+                                  backgroundColor: '#f5f5f5',
+                                  color: '#777',
+                                }}
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <span style={{ fontSize: '12px', color: '#888' }}>
+                        {category.items.length} item{category.items.length !== 1 ? 's' : ''}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
+                      {category.items.map((ingredient) => {
+                        const isSelected = selectedIngredients.includes(ingredient);
+                        return (
+                          <button
+                            key={`${category.name}-${ingredient}`}
+                            onClick={() => handleIngredientToggle(ingredient)}
+                            style={{
+                              padding: '6px 12px',
+                              borderRadius: '4px',
+                              fontSize: '13px',
+                              fontWeight: '500',
+                              border: 'none',
+                              cursor: 'pointer',
+                              backgroundColor: isSelected ? '#4caf50' : '#f0f0f0',
+                              color: isSelected ? '#ffffff' : '#333',
+                              transition: 'all 0.3s ease',
+                              textTransform: 'capitalize'
+                            }}
+                            onMouseEnter={(e) => {
+                              if (!isSelected) {
+                                e.target.style.backgroundColor = '#e0e0e0';
+                              }
+                            }}
+                            onMouseLeave={(e) => {
+                              if (!isSelected) {
+                                e.target.style.backgroundColor = '#f0f0f0';
+                              }
+                            }}
+                          >
+                            {ingredient}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
               )}
             </div>
           </div>

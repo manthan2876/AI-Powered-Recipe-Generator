@@ -1,4 +1,16 @@
 import { API_BASE } from "./apiConfig";
+import {
+  ALL_INGREDIENT_NAMES,
+  INGREDIENT_CATEGORIES,
+} from "../data/ingredientCatalog";
+
+const cloneCategories = () =>
+  INGREDIENT_CATEGORIES.map((category) => ({
+    ...category,
+    items: [...category.items],
+  }));
+
+const cloneIngredientList = () => [...ALL_INGREDIENT_NAMES];
 
 export async function getRecipes(query = '') {
   const url = query ? `${API_BASE}/api/recipes?keyword=${encodeURIComponent(query)}` : `${API_BASE}/api/recipes`;
@@ -72,12 +84,21 @@ export async function searchRecipesByIngredients(ingredients = [], filters = {})
   return res.json();
 }
 
-export async function getAllIngredients() {
-  const res = await fetch(`${API_BASE}/api/recipes/ingredients`, {
-    credentials: 'include'
-  });
-  if (!res.ok) return [];
-  return res.json();
+export async function getAllIngredients(options = {}) {
+  const format = options.format ?? "list";
+
+  if (format === "categories") {
+    return cloneCategories();
+  }
+
+  if (format === "both") {
+    return {
+      categories: cloneCategories(),
+      items: cloneIngredientList(),
+    };
+  }
+
+  return cloneIngredientList();
 }
 
 export async function getFavoriteRecipes() {
