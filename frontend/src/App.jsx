@@ -12,6 +12,7 @@ import AboutUs from "./components/AboutUs";
 import ManageAccount from "./components/ManageAccount";
 
 import { AuthProvider } from "./context/AuthContext";
+import { ThemeProvider } from "./context/ThemeContext";
 
 import LandingPage from "./pages/LandingPage";
 import ProfilePage from "./pages/ProfilePage";
@@ -22,24 +23,26 @@ import ResetPasswordPage from "./pages/ResetPasswordPage";
 function App() {
   return (
     <AuthProvider>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/recipes" element={<Recipes />} />
-          <Route path="/shopping-lists" element={<ShoppingLists />} />
-          <Route path="/saved-recipes" element={<SavedRecipes />} />
-          <Route path="/generate-recipe" element={<RecipeGenerationPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/reset-password/:resetToken" element={<ResetPasswordPage />} />
-          <Route path="/auth/google/success" element={<GoogleAuthSuccessPage />} />
-          <Route path="/about-us" element={<AboutUs />} />
-          <Route path="/manage-account" element={<ManageAccount />} />
-        </Routes>
-      </Router>
+      <ThemeProvider>
+        <Router>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home" element={<Home />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/shopping-lists" element={<ShoppingLists />} />
+            <Route path="/saved-recipes" element={<SavedRecipes />} />
+            <Route path="/generate-recipe" element={<RecipeGenerationPage />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password/:resetToken" element={<ResetPasswordPage />} />
+            <Route path="/auth/google/success" element={<GoogleAuthSuccessPage />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/manage-account" element={<ManageAccount />} />
+          </Routes>
+        </Router>
+      </ThemeProvider>
     </AuthProvider>
   );
 }

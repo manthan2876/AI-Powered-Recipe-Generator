@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import { toggleFavorite } from "../services/recipes";
+import { Heart, Share2, Star } from "lucide-react";
+import { motion } from "framer-motion";
 
 const RecipeCard = ({ recipe, onDelete, onClick }) => {
   const { user } = useContext(AuthContext);
@@ -13,7 +15,7 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
 
   const handleSave = async (e) => {
     e.stopPropagation();
-    
+
     if (!user) {
       alert("Please login to save recipes");
       return;
@@ -26,6 +28,9 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
       // Update the recipe object if needed
       if (result.recipe) {
         recipe.isSaved = result.isSaved;
+      }
+      if (onDelete && !result.isSaved) {
+        onDelete();
       }
     } catch (error) {
       console.error("Error toggling favorite:", error);
@@ -43,167 +48,81 @@ const RecipeCard = ({ recipe, onDelete, onClick }) => {
   };
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px',
-        backgroundColor: '#ffffff',
-        borderRadius: '8px',
-        border: '1px solid #e0e0e0',
-        padding: '16px',
-        cursor: 'pointer',
-        transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)'
-      }}
-      className="recipe-card"
+    <motion.div
+      whileHover={{ y: -5 }}
       onClick={onClick}
-      onMouseEnter={(e) => {
-        e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.12)';
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = 'none';
-      }}
+      className={`
+        group relative flex flex-col md:flex-row bg-white/80 dark:bg-gray-800/60 backdrop-blur-md 
+        border border-white/50 dark:border-white/10 rounded-2xl overflow-hidden 
+        shadow-sm hover:shadow-xl transition-all duration-300 cursor-pointer
+        h-full
+      `}
     >
       {/* Recipe Image */}
-      <div style={{ flexShrink: 0, width: '100%' }} className="recipe-card-image">
+      <div className="w-full md:w-32 h-48 md:h-auto flex-shrink-0 relative overflow-hidden">
         <img
           src={recipe.image || "/default-recipe.jpg"}
           alt={recipe.title}
-          style={{
-            width: '100%',
-            height: '200px',
-            objectFit: 'cover',
-            borderRadius: '8px',
-            transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)'
-          }}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent md:hidden" />
       </div>
 
       {/* Recipe Info */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <h3 style={{
-            fontSize: '18px',
-            fontWeight: '600',
-            color: '#333',
-            marginBottom: '4px'
-          }}>
+          <h3 className="text-lg font-bold font-display text-gray-800 dark:text-white mb-1 line-clamp-2 leading-tight">
             {recipe.title}
           </h3>
+
           {recipe.cuisine && (
-            <p style={{ fontSize: '14px', color: '#666', marginBottom: '8px' }}>
+            <span className="inline-block px-2 py-0.5 rounded-md bg-primary/10 text-primary text-xs font-semibold mb-2">
               {recipe.cuisine}
-            </p>
+            </span>
           )}
+
           {recipe.ingredientMatch !== undefined && (
-            <p style={{ fontSize: '14px', color: '#333' }}>
-              Matches {recipe.ingredientMatch} ingredient{recipe.ingredientMatch !== 1 ? 's' : ''}.
+            <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">
+              Matches <span className="font-bold text-green-600 dark:text-green-400">{recipe.ingredientMatch}</span> ingredient{recipe.ingredientMatch !== 1 ? 's' : ''}.
             </p>
           )}
+
           {recipe.rating > 0 && (
-            <p style={{ fontSize: '14px', color: '#666', marginTop: '4px' }}>
-              ⭐ {recipe.rating.toFixed(1)} {recipe.numReviews > 0 && `(${recipe.numReviews} review${recipe.numReviews !== 1 ? 's' : ''})`}
-            </p>
+            <div className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400">
+              <Star size={14} className="fill-yellow-400 text-yellow-400" />
+              <span className="font-medium text-gray-700 dark:text-gray-200">{recipe.rating.toFixed(1)}</span>
+              <span className="text-xs">({recipe.numReviews || 0})</span>
+            </div>
           )}
         </div>
-      </div>
 
-      {/* Action Icons */}
-      <div style={{
-        flexShrink: 0,
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'flex-end',
-        gap: '8px'
-      }} className="recipe-card-actions">
-        <button
-          onClick={handleSave}
-          style={{
-            padding: '8px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#f0f0f0';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'transparent';
-          }}
-          aria-label="Save recipe"
-          disabled={isSaving}
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill={isSaved ? 'currentColor' : 'none'}
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ color: isSaved ? '#ff4444' : '#999', opacity: isSaving ? 0.5 : 1 }}
+        {/* Action Icons - Desktop: Bottom Right, Mobile: Absolute Top Right */}
+        <div className="flex justify-end gap-2 mt-4 md:mt-0">
+          <button
+            onClick={handleSave}
+            disabled={isSaving}
+            className={`
+                    p-2 rounded-full transition-all duration-200 focus:outline-none
+                    ${isSaved
+                ? 'bg-red-50 dark:bg-red-900/20 text-red-500'
+                : 'bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-500'
+              }
+                `}
+            title={isSaved ? "Remove from favorites" : "Save recipe"}
           >
-            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-          </svg>
-        </button>
-        <button
-          onClick={handleShare}
-          style={{
-            padding: '8px',
-            backgroundColor: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            borderRadius: '4px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.target.style.backgroundColor = '#f0f0f0';
-          }}
-          onMouseLeave={(e) => {
-            e.target.style.backgroundColor = 'transparent';
-          }}
-          aria-label="Share recipe"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            style={{ color: '#999' }}
-          >
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-          </svg>
-        </button>
-      </div>
+            <Heart size={18} className={isSaved ? "fill-current" : ""} />
+          </button>
 
-      <style>{`
-        @media (min-width: 640px) {
-          .recipe-card {
-            flex-direction: row !important;
-          }
-          .recipe-card-image {
-            width: 128px !important;
-          }
-          .recipe-card-image img {
-            width: 128px !important;
-            height: 128px !important;
-          }
-          .recipe-card-actions {
-            flex-direction: column !important;
-          }
-        }
-      `}</style>
-    </div>
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full bg-gray-100 dark:bg-white/10 text-gray-500 dark:text-gray-400 hover:bg-primary/10 hover:text-primary transition-all duration-200"
+            title="Share recipe"
+          >
+            <Share2 size={18} />
+          </button>
+        </div>
+      </div>
+    </motion.div>
   );
 };
 

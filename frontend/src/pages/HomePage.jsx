@@ -1,124 +1,128 @@
 import React from "react";
 import { Link } from 'react-router-dom';
+import { motion } from "framer-motion";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
+import GlassCard from "../components/ui/GlassCard";
+import AnimatedButton from "../components/ui/AnimatedButton";
 
 function HomePage() {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1
+    }
+  };
+
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div className="min-h-screen flex flex-col font-sans text-white">
       <Header />
-      <main style={{ flex: 1, backgroundColor: '#f5f5f5', padding: 'clamp(20px, 4vw, 40px) clamp(16px, 4vw, 20px)' }}>
-        <section style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          textAlign: 'center',
-          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)'
-        }}>
-          <h1 style={{
-            fontSize: 'clamp(28px, 6vw, 42px)',
-            fontWeight: 'bold',
-            color: '#333',
-            marginBottom: '20px'
-          }}>
-            Welcome to Your Recipe & Shopping List App
-          </h1>
-          <p style={{
-            fontSize: 'clamp(16px, 3vw, 18px)',
-            color: '#666',
-            marginBottom: '40px',
-            maxWidth: '600px',
-            margin: '0 auto 40px'
-          }}>
-            Organize your meal planning and shopping with ease.
-          </p>
-          <div style={{
-            display: 'flex',
-            gap: '20px',
-            justifyContent: 'center',
-            flexWrap: 'wrap'
-          }}>
-            <Link
-              to="/recipes"
-              style={{
-                display: 'inline-block',
-                padding: '12px 32px',
-                backgroundColor: '#4caf50',
-                color: '#ffffff',
-                borderRadius: '4px',
-                fontSize: '16px',
-                fontWeight: '500',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}
-            >
-              Browse Recipes
+      <main className="flex-1 container mx-auto px-4 py-12 relative z-10 flex flex-col items-center">
+
+        <motion.section
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+          className="w-full max-w-5xl text-center mb-16"
+        >
+          <motion.h1
+            variants={itemVariants}
+            className="text-4xl md:text-6xl font-bold font-display text-white mb-6 leading-tight"
+          >
+            Welcome to Your <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-500">
+              Smart Kitchen
+            </span>
+          </motion.h1>
+
+          <motion.p
+            variants={itemVariants}
+            className="text-lg md:text-xl text-gray-200 mb-10 max-w-2xl mx-auto leading-relaxed"
+          >
+            Organize your meal planning, generate creative recipes from leftovers, and manage your shopping with the power of AI.
+          </motion.p>
+
+          <motion.div
+            variants={itemVariants}
+            className="flex flex-col sm:flex-row gap-4 justify-center"
+          >
+            <Link to="/recipes">
+              <AnimatedButton variant="primary" className="w-full sm:w-auto text-lg px-8 py-4 shadow-lg shadow-primary/25">
+                Browse Recipes
+              </AnimatedButton>
             </Link>
-            <Link
-              to="/shopping-lists"
-              style={{
-                display: 'inline-block',
-                padding: '12px 32px',
-                backgroundColor: '#ffffff',
-                color: '#333',
-                border: '1px solid #e0e0e0',
-                borderRadius: '4px',
-                fontSize: '16px',
-                fontWeight: '500',
-                textDecoration: 'none',
-                transition: 'all 0.3s ease'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#ffffff'}
-            >
-              Your Shopping Lists
+            <Link to="/shopping-lists">
+              <AnimatedButton variant="secondary" className="w-full sm:w-auto text-lg px-8 py-4">
+                Your Shopping Lists
+              </AnimatedButton>
             </Link>
-          </div>
+          </motion.div>
+        </motion.section>
+
+        <section className="w-full max-w-6xl mb-16 px-4">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold font-display text-white mb-2">Platform Features</h2>
+              <div className="h-1 w-20 bg-primary mx-auto rounded-full" />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                {
+                  icon: "🍲",
+                  title: "Recipe Management",
+                  desc: "Save, organize, and edit your favorite recipes in one beautiful digital cookbook."
+                },
+                {
+                  icon: "🛒",
+                  title: "Smart Shopping",
+                  desc: "Automatically generate shopping lists from your selected recipes with one click."
+                },
+                {
+                  icon: "🤖",
+                  title: "AI Generation",
+                  desc: "Turn random ingredients into 5-star meals using our advanced AI chef engine."
+                },
+                {
+                  icon: "🔒",
+                  title: "Secure Cloud",
+                  desc: "Your data is safe and synced across all your devices with secure authentication."
+                }
+              ].map((feature, index) => (
+                <GlassCard
+                  key={index}
+                  className="h-full flex flex-col items-center text-center p-6 bg-white/40 hover:bg-white/60 transition-colors"
+                  delay={index * 0.1}
+                >
+                  <div className="w-14 h-14 bg-gradient-to-br from-white to-gray-100 rounded-full shadow-lg flex items-center justify-center text-3xl mb-4 border border-white">
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-lg font-bold text-white mb-3">{feature.title}</h3>
+                  <p className="text-sm text-gray-200 leading-relaxed">
+                    {feature.desc}
+                  </p>
+                </GlassCard>
+              ))}
+            </div>
+          </motion.div>
         </section>
 
-        <section style={{
-          maxWidth: '1200px',
-          margin: '0 auto',
-          padding: 'clamp(40px, 6vw, 60px) clamp(16px, 4vw, 20px)',
-          backgroundColor: '#ffffff',
-          borderRadius: '8px',
-          marginTop: '40px'
-        }}>
-          <h2 style={{
-            fontSize: 'clamp(24px, 5vw, 32px)',
-            fontWeight: 'bold',
-            textAlign: 'center',
-            marginBottom: '40px',
-            color: '#333'
-          }}>
-            Features
-          </h2>
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 250px), 1fr))',
-            gap: '20px'
-          }}>
-            {[
-              'Save and manage your favorite recipes',
-              'Create shopping lists automatically from chosen recipes',
-              'Generate recipes using AI based on ingredients you have',
-              'User authentication and personalized accounts'
-            ].map((feature, index) => (
-              <div
-                key={index}
-                style={{
-                  padding: '20px',
-                  backgroundColor: '#f9f9f9',
-                  borderRadius: '8px',
-                  border: '1px solid #e0e0e0'
-                }}
-              >
-                <p style={{ color: '#666', lineHeight: '1.6' }}>{feature}</p>
-              </div>
-            ))}
-          </div>
-        </section>
       </main>
       <Footer />
     </div>

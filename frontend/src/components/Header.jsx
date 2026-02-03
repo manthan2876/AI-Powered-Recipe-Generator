@@ -2,9 +2,14 @@ import React, { useContext, useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { logout } from "../services/auth";
+import AnimatedButton from "./ui/AnimatedButton";
+
+
+import Logo from "./ui/Logo";
 
 const Header = () => {
   const { user, logoutUser } = useContext(AuthContext);
+  // ... (keep existing state) ...
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -21,7 +26,6 @@ const Header = () => {
     }
   };
 
-  // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -37,403 +41,125 @@ const Header = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showDropdown]);
+
   return (
-    <header style={{
-      backgroundColor: '#ffffff',
-      borderBottom: '1px solid #e0e0e0',
-      padding: '12px 20px',
-      position: 'sticky',
-      top: 0,
-      zIndex: 100,
-      boxShadow: '0 1px 3px rgba(0,0,0,0.1)'
-    }}>
-      <div style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '20px'
-      }}>
-        {/* Left Section */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setShowMobileMenu(!showMobileMenu)}
-            style={{
-              display: 'none',
-              alignItems: 'center',
-              justifyContent: 'center',
-              width: '36px',
-              height: '36px',
-              borderRadius: '4px',
-              backgroundColor: 'transparent',
-              border: '1px solid #e0e0e0',
-              cursor: 'pointer',
-              padding: '0',
-              flexShrink: 0
-            }}
-            aria-label="Toggle menu"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              {showMobileMenu ? (
-                <path d="M18 6L6 18M6 6l12 12" />
-              ) : (
-                <>
-                  <path d="M3 12h18M3 6h18M3 18h18" />
-                </>
-              )}
-            </svg>
-          </button>
-          
-          {/* Logo */}
-          <Link to="/" style={{ 
-            fontSize: 'clamp(18px, 4vw, 24px)', 
-            fontWeight: 'bold', 
-            color: '#333',
-            textDecoration: 'none'
-          }}>
-            <img src="/icon.svg" alt="Logo" style={{ width: '30px', height: '30px', verticalAlign: 'middle', marginRight: '8px' }} />
-            CookToGo
-          </Link>
+    <header className="sticky top-0 z-50 bg-white/80 dark:bg-gray-950/90 backdrop-blur-md border-b border-white/50 dark:border-white/10 shadow-sm transition-all duration-300">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex justify-between h-16 items-center">
+          {/* Left Section */}
+          <div className="flex items-center gap-4">
+            {/* Mobile Menu Button */}
+            <button
+              onClick={() => setShowMobileMenu(!showMobileMenu)}
+              className="md:hidden p-2 rounded-lg text-gray-600 hover:bg-gray-100 transition-colors"
+              aria-label="Toggle menu"
+            >
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                {showMobileMenu ? <path d="M18 6L6 18M6 6l12 12" /> : <path d="M3 12h18M3 6h18M3 18h18" />}
+              </svg>
+            </button>
 
-        </div>
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-3 text-2xl font-display font-bold text-gray-800 dark:text-white hover:text-primary transition-colors group">
+              <Logo className="w-10 h-10 group-hover:scale-110 transition-transform duration-300" />
+              <span>CookTo<span className="text-primary">Go</span></span>
+            </Link>
+          </div>
 
-        {/* Desktop Right Section */}
-        <div style={{ 
-          display: 'flex', 
-          alignItems: 'center', 
-          gap: '12px'
-        }} className="desktop-nav">
+          {/* Desktop Right Section */}
+          <div className="hidden md:flex items-center gap-6">
+            <nav className="flex gap-6 items-center">
+              <Link to="/home" className="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary font-medium transition-colors">Explore</Link>
+              <Link to="/about-us" className="text-gray-600 dark:text-gray-300 hover:text-primary dark:hover:text-primary font-medium transition-colors">About</Link>
+            </nav>
 
-          {/* Auth Buttons */}
-          {user ? (
-            <>
-              <div style={{ position: 'relative' }} ref={dropdownRef}>
+            {/* Theme Toggle Removed - Dark Mode Permanent */}
+
+            {/* Auth Buttons */}
+            {user ? (
+              <div className="relative" ref={dropdownRef}>
                 <button
                   onClick={() => setShowDropdown(!showDropdown)}
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: '36px',
-                    height: '36px',
-                    borderRadius: '50%',
-                    backgroundColor: showDropdown ? '#e0e0e0' : '#f0f0f0',
-                    color: '#666',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!showDropdown) {
-                      e.target.style.backgroundColor = '#e0e0e0';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!showDropdown) {
-                      e.target.style.backgroundColor = '#f0f0f0';
-                    }
-                  }}
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${showDropdown ? 'bg-primary text-white shadow-lg' : 'bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-white/20'}`}
                 >
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="12" cy="7" r="4"></circle>
-                  </svg>
+                  <span className="font-bold text-lg">{user.name ? user.name[0].toUpperCase() : 'U'}</span>
                 </button>
-                
+                {/* ... dropdown content ... */}
+
                 {showDropdown && (
-                  <div style={{
-                    position: 'absolute',
-                    top: '100%',
-                    right: 0,
-                    marginTop: '8px',
-                    backgroundColor: '#ffffff',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '8px',
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                    minWidth: '200px',
-                    zIndex: 1000,
-                    overflow: 'hidden'
-                  }}>
+                  <div className="absolute right-0 mt-3 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                    <div className="px-4 py-2 border-b border-gray-50 mb-1">
+                      <p className="text-sm font-semibold text-gray-800">My Account</p>
+                    </div>
                     <Link
                       to="/saved-recipes"
                       onClick={() => setShowDropdown(false)}
-                      style={{
-                        display: 'block',
-                        padding: '12px 16px',
-                        color: '#333',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        borderBottom: '1px solid #f0f0f0',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                     >
                       Favorite Recipes
                     </Link>
                     <Link
                       to="/shopping-lists"
                       onClick={() => setShowDropdown(false)}
-                      style={{
-                        display: 'block',
-                        padding: '12px 16px',
-                        color: '#333',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        borderBottom: '1px solid #f0f0f0',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                     >
                       Shopping Lists
                     </Link>
                     <Link
                       to="/profile"
                       onClick={() => setShowDropdown(false)}
-                      style={{
-                        display: 'block',
-                        padding: '12px 16px',
-                        color: '#333',
-                        textDecoration: 'none',
-                        fontSize: '14px',
-                        borderBottom: '1px solid #f0f0f0',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary transition-colors"
                     >
                       Manage Account
                     </Link>
                     <button
                       onClick={handleLogout}
-                      style={{
-                        display: 'block',
-                        width: '100%',
-                        padding: '12px 16px',
-                        backgroundColor: 'transparent',
-                        color: '#d32f2f',
-                        border: 'none',
-                        textAlign: 'left',
-                        fontSize: '14px',
-                        cursor: 'pointer',
-                        transition: 'all 0.3s ease'
-                      }}
-                      onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
-                      onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors"
                     >
                       Log Out
                     </button>
                   </div>
                 )}
               </div>
-            </>
-          ) : (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Link
-                to="/login"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: 'transparent',
-                  color: '#666',
-                  border: '1px solid #e0e0e0',
-                  borderRadius: '4px',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#f5f5f5';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = 'transparent';
-                }}
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                style={{
-                  padding: '8px 16px',
-                  backgroundColor: '#4caf50',
-                  color: '#ffffff',
-                  border: 'none',
-                  borderRadius: '4px',
-                  textDecoration: 'none',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  transition: 'all 0.3s ease'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.backgroundColor = '#45a049';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.backgroundColor = '#4caf50';
-                }}
-              >
-                Register
-              </Link>
-            </div>
-          )}
+            ) : (
+              <div className="flex gap-3">
+                <Link to="/login">
+                  <button className="px-4 py-2 rounded-full font-medium text-gray-600 hover:bg-gray-100 transition-colors">
+                    Login
+                  </button>
+                </Link>
+                <Link to="/register">
+                  <AnimatedButton variant="primary" className="!py-2 !px-5 !text-sm">
+                    Sign Up
+                  </AnimatedButton>
+                </Link>
+              </div>
+            )}
+          </div>
         </div>
       </div>
 
       {/* Mobile Menu */}
       {showMobileMenu && (
-        <div style={{
-          position: 'absolute',
-          top: '100%',
-          left: 0,
-          right: 0,
-          backgroundColor: '#ffffff',
-          borderBottom: '1px solid #e0e0e0',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-          zIndex: 99
-        }}>
-          <div style={{
-            display: 'flex',
-            flexDirection: 'column',
-            padding: '16px 20px',
-            gap: '12px'
-          }}>
+        <div className="md:hidden bg-white/95 backdrop-blur-xl border-t border-gray-100 shadow-lg absolute w-full left-0 z-40 animate-in slide-in-from-top-5 duration-300">
+          <div className="flex flex-col p-4 gap-2">
+            <Link to="/home" className="p-3 rounded-lg hover:bg-gray-50 font-medium text-gray-700">Explore Recipes</Link>
             {user ? (
               <>
-                <Link
-                  to="/saved-recipes"
-                  onClick={() => setShowMobileMenu(false)}
-                  style={{
-                    padding: '12px 16px',
-                    color: '#333',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    borderRadius: '4px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Favorite Recipes
-                </Link>
-                <Link
-                  to="/shopping-lists"
-                  onClick={() => setShowMobileMenu(false)}
-                  style={{
-                    padding: '12px 16px',
-                    color: '#333',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    borderRadius: '4px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Shopping Lists
-                </Link>
-                <Link
-                  to="/manage-account"
-                  onClick={() => setShowMobileMenu(false)}
-                  style={{
-                    padding: '12px 16px',
-                    color: '#333',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    borderRadius: '4px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Manage Account
-                </Link>
-                <button
-                  onClick={async () => {
-                    await handleLogout();
-                    setShowMobileMenu(false);
-                  }}
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: 'transparent',
-                    color: '#d32f2f',
-                    border: 'none',
-                    textAlign: 'left',
-                    fontSize: '16px',
-                    cursor: 'pointer',
-                    borderRadius: '4px',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#ffebee'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Log Out
-                </button>
+                <Link to="/saved-recipes" onClick={() => setShowMobileMenu(false)} className="p-3 rounded-lg hover:bg-gray-50 text-gray-700">Favorites</Link>
+                <Link to="/shopping-lists" onClick={() => setShowMobileMenu(false)} className="p-3 rounded-lg hover:bg-gray-50 text-gray-700">Shopping Lists</Link>
+                <Link to="/manage-account" onClick={() => setShowMobileMenu(false)} className="p-3 rounded-lg hover:bg-gray-50 text-gray-700">Account</Link>
+                <button onClick={async () => { await handleLogout(); setShowMobileMenu(false); }} className="p-3 rounded-lg hover:bg-red-50 text-red-500 text-left">Log Out</button>
               </>
             ) : (
-              <>
-                <Link
-                  to="/login"
-                  onClick={() => setShowMobileMenu(false)}
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: 'transparent',
-                    color: '#666',
-                    border: '1px solid #e0e0e0',
-                    borderRadius: '4px',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    textAlign: 'center',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#f5f5f5'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = 'transparent'}
-                >
-                  Login
-                </Link>
-                <Link
-                  to="/register"
-                  onClick={() => setShowMobileMenu(false)}
-                  style={{
-                    padding: '12px 16px',
-                    backgroundColor: '#4caf50',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '4px',
-                    textDecoration: 'none',
-                    fontSize: '16px',
-                    fontWeight: '500',
-                    textAlign: 'center',
-                    transition: 'all 0.3s ease'
-                  }}
-                  onMouseEnter={(e) => e.target.style.backgroundColor = '#45a049'}
-                  onMouseLeave={(e) => e.target.style.backgroundColor = '#4caf50'}
-                >
-                  Register
-                </Link>
-              </>
+              <div className="flex flex-col gap-2 mt-4">
+                <Link to="/login" onClick={() => setShowMobileMenu(false)} className="w-full p-3 text-center border border-gray-200 rounded-lg font-medium">Login</Link>
+                <Link to="/register" onClick={() => setShowMobileMenu(false)} className="w-full p-3 text-center bg-primary text-white rounded-lg font-medium shadow-lg shadow-primary/30">Sign Up</Link>
+              </div>
             )}
           </div>
         </div>
       )}
-
-      <style>{`
-        @media (max-width: 768px) {
-          .desktop-nav {
-            display: none !important;
-          }
-          header button[aria-label="Toggle menu"] {
-            display: flex !important;
-          }
-        }
-        @media (min-width: 769px) {
-          header button[aria-label="Toggle menu"] {
-            display: none !important;
-          }
-        }
-      `}</style>
     </header>
   );
 };

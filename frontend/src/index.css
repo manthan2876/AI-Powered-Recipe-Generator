@@ -1,531 +1,132 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@import "tailwindcss";
+
+:root {
+  /* Food-inspired Palette */
+  --color-food-primary: #FF6B6B;
+  /* Fresh Salmon/Tomato */
+  --color-food-secondary: #4ECDC4;
+  /* Fresh Mint/Herb */
+  --color-food-accent: #FFD93D;
+  /* Lemon/Cheese */
+  --color-food-dark: #F7FFF7;
+  /* Text becomes light (Default) */
+  --color-food-light: #292F36;
+  /* Background becomes dark (Default) */
+
+  /* Glassmorphism Variables (Dark Mode Default) */
+  --glass-bg: rgba(30, 30, 35, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+}
+
+@theme {
+  --color-primary: var(--color-food-primary);
+  --color-secondary: var(--color-food-secondary);
+  --color-accent: var(--color-food-accent);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+}
+
+/* Global Styles */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
-  color: #333;
-  line-height: 1.6;
+  /* Mesh Gradient Background (Dark Default) */
+  background:
+    radial-gradient(at 0% 0%, rgba(255, 107, 107, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(78, 205, 196, 0.1) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, rgba(255, 217, 61, 0.1) 0px, transparent 50%),
+    radial-gradient(at 0% 100%, rgba(20, 20, 25, 0.95) 0px, transparent 50%),
+    linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+  background-size: 200% 200%;
+  animation: gradient-animation 15s ease infinite;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  color: var(--color-food-dark);
+  transition: color 0.3s ease, background 0.3s ease;
 }
 
+.glass-input {
+  @apply bg-white/5 border-white/10 text-white placeholder-gray-400 focus:bg-white/10;
+}
+
+/* Utility Classes for Glassmorphism */
+/* Global Link Reset */
 a {
+  color: inherit !important;
   text-decoration: none;
-  color: inherit;
 }
 
-button {
-  cursor: pointer;
-  border: none;
-  background: none;
-  font-family: inherit;
+/* Utility Classes for Glassmorphism */
+/* Utility Classes for Glassmorphism */
+.glass-panel {
+  background: rgba(17, 24, 39, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow);
 }
 
-input, textarea, select {
-  font-family: inherit;
+.glass-card {
+  background: rgba(17, 24, 39, 0.8);
+  /* Highly visible dark card */
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow);
+  @apply rounded-2xl transition-all duration-300 ease-out;
 }
 
-/* SuperCook.com style colors */
-:root {
-  --primary-green: #4caf50;
-  --primary-green-dark: #45a049;
-  --primary-green-light: #81c784;
-  --text-primary: #333;
-  --text-secondary: #666;
-  --text-muted: #999;
-  --bg-white: #ffffff;
-  --bg-light: #f5f5f5;
-  --border-color: #e0e0e0;
-  --hover-bg: #f0f0f0;
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px 0 rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.2);
 }
 
-/* Responsive breakpoints */
-/* Mobile: < 640px */
-/* Tablet: 640px - 1024px */
-/* Desktop: > 1024px */
-
-/* Responsive utilities */
-@media (max-width: 640px) {
-  /* Mobile styles */
-  body {
-    font-size: 14px;
-  }
-}
-
-/* Responsive header elements */
-@media (max-width: 768px) {
-  .header-ingredient-count,
-  .header-search {
-    display: none !important;
-  }
-}
-
-@media (max-width: 1024px) {
-  .header-recipe-count {
-    display: none !important;
-  }
-}
-
-/* Responsive image */
-img {
-  max-width: 100%;
-  height: auto;
-}
-
-/* ============================================
-   ANIMATIONS & HOVER EFFECTS
-   ============================================ */
-
-/* Keyframe Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    opacity: 0;
-    transform: translateX(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.95);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes pulse {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-5px);
-  }
-}
-
-/* Global Transitions */
-* {
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Button Animations */
-button {
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
-}
-
-button::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-button:hover::before {
-  width: 300px;
-  height: 300px;
-}
-
-button:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-button:active {
-  transform: translateY(0);
-  transition: transform 0.1s;
-}
-
-/* Primary Green Button Hover */
-button[style*="background-color: #4caf50"],
-button[style*="background-color: rgb(76, 175, 80)"] {
-  transition: all 0.3s ease;
-}
-
-button[style*="background-color: #4caf50"]:hover,
-button[style*="background-color: rgb(76, 175, 80)"]:hover {
-  background-color: #45a049 !important;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-/* Link Animations */
-a {
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-a:hover {
-  color: var(--primary-green);
-}
-
-/* Link with underline effect */
-a[style*="text-decoration: none"]:hover::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: var(--primary-green);
-  animation: slideInRight 0.3s ease;
-}
-
-/* Card Animations */
-.recipe-card,
-div[style*="backgroundColor: #ffffff"][style*="borderRadius: '8px'"],
-div[style*="backgroundColor: '#ffffff'"][style*="borderRadius: '8px'"] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: fadeIn 0.5s ease;
-}
-
-.recipe-card:hover,
-div[style*="backgroundColor: #ffffff"][style*="borderRadius: '8px'"]:hover,
-div[style*="backgroundColor: '#ffffff'"][style*="borderRadius: '8px'"]:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-}
-
-/* Recipe Card Image Hover */
-.recipe-card img,
-.recipe-card-image img {
-  transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.recipe-card:hover img,
-.recipe-card-image:hover img {
-  transform: scale(1.05);
-}
-
-/* Feature Card Hover */
-div[style*="backgroundColor: #f9f9f9"][style*="borderRadius: '8px'"]:hover,
-div[style*="backgroundColor: '#f9f9f9'"][style*="borderRadius: '8px'"]:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-  transition: all 0.3s ease;
-}
-
-/* Header Animations */
-header {
-  animation: slideInDown 0.4s ease;
-}
-
-header button:hover {
-  background-color: #e0e0e0 !important;
-  transform: scale(1.05);
-}
-
-header a:hover {
-  opacity: 0.8;
-  transform: scale(1.02);
-}
-
-/* Logo Hover */
-header a[href="/"]:hover img {
-  transform: rotate(5deg) scale(1.1);
-  transition: transform 0.3s ease;
-}
-
-header a[href="/"] img {
-  transition: transform 0.3s ease;
-}
-
-/* Dropdown Animations */
-div[style*="position: absolute"][style*="backgroundColor: #ffffff"] {
-  animation: slideInDown 0.3s ease;
-}
-
-/* Mobile Menu Animations */
-div[style*="position: absolute"][style*="backgroundColor: #ffffff"][style*="top: '100%'"] {
-  animation: slideInDown 0.3s ease;
-}
-
-/* Input Focus Animations */
-input:focus,
-textarea:focus,
-select:focus {
-  outline: none;
-  border-color: var(--primary-green) !important;
-  box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-  transition: all 0.3s ease;
-}
-
-input,
-textarea,
-select {
-  transition: all 0.3s ease;
-}
-
-/* Ingredient Button Hover */
-button[style*="backgroundColor: #f0f0f0"]:hover,
-button[style*="backgroundColor: '#f0f0f0'"]:hover {
-  background-color: #e0e0e0 !important;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-button[style*="backgroundColor: #4caf50"]:hover,
-button[style*="backgroundColor: '#4caf50'"]:hover {
-  background-color: #45a049 !important;
-  transform: translateY(-2px) scale(1.02);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
-}
-
-/* Filter Button Animations */
-button[style*="border: '2px solid #4caf50'"]:hover,
-button[style*="border: 2px solid #4caf50"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
-}
-
-/* Icon Button Hover */
-button[aria-label]:hover {
-  transform: scale(1.1) rotate(5deg);
-  background-color: #f0f0f0 !important;
-}
-
-button[aria-label="Save recipe"]:hover svg,
-button[aria-label="Share recipe"]:hover svg {
-  transform: scale(1.2);
-  transition: transform 0.3s ease;
-}
-
-button[aria-label="Save recipe"] svg,
-button[aria-label="Share recipe"] svg {
-  transition: transform 0.3s ease;
-}
-
-/* Modal/Overlay Animations */
-div[style*="position: fixed"][style*="backgroundColor: rgba(0,0,0,0.5)"] {
-  animation: fadeIn 0.3s ease;
-}
-
-/* Sidebar Animations */
-aside.sidebar {
-  transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Loading State Animation */
-@keyframes shimmer {
-  0% {
-    background-position: -1000px 0;
-  }
-  100% {
-    background-position: 1000px 0;
-  }
-}
-
-/* Smooth Scroll */
-html {
-  scroll-behavior: smooth;
-}
-
-/* Page Fade In */
-main {
-  animation: fadeIn 0.5s ease;
-}
-
-section {
-  animation: fadeIn 0.6s ease;
-}
-
-/* Text Animations */
-h1, h2, h3 {
-  animation: slideInDown 0.6s ease;
-}
-
-p {
-  animation: fadeIn 0.8s ease;
-}
-
-/* Feature Grid Items */
-div[style*="display: grid"] > div {
-  animation: scaleIn 0.5s ease;
-  animation-fill-mode: both;
-}
-
-div[style*="display: grid"] > div:nth-child(1) {
-  animation-delay: 0.1s;
-}
-
-div[style*="display: grid"] > div:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-div[style*="display: grid"] > div:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-div[style*="display: grid"] > div:nth-child(4) {
-  animation-delay: 0.4s;
-}
-
-/* Recipe List Items */
-div[style*="display: flex"][style*="flexDirection: column"] > div {
-  animation: slideInRight 0.5s ease;
-  animation-fill-mode: both;
-}
-
-div[style*="display: flex"][style*="flexDirection: column"] > div:nth-child(1) {
-  animation-delay: 0.05s;
-}
-
-div[style*="display: flex"][style*="flexDirection: column"] > div:nth-child(2) {
-  animation-delay: 0.1s;
-}
-
-div[style*="display: flex"][style*="flexDirection: column"] > div:nth-child(3) {
-  animation-delay: 0.15s;
-}
-
-div[style*="display: flex"][style*="flexDirection: column"] > div:nth-child(4) {
-  animation-delay: 0.2s;
-}
-
-div[style*="display: flex"][style*="flexDirection: column"] > div:nth-child(5) {
-  animation-delay: 0.25s;
-}
-
-/* Close Button Hover */
-button[style*="color: #999"]:hover,
-button[style*="color: '#999'"]:hover {
-  color: #333 !important;
-  transform: rotate(90deg) scale(1.1);
-  transition: all 0.3s ease;
-}
-
-/* Footer Animations */
-footer {
-  animation: fadeIn 0.8s ease;
-}
-
-/* Mobile Menu Toggle Button */
-button[aria-label="Toggle menu"]:hover {
-  background-color: #f0f0f0 !important;
-  transform: scale(1.1);
-}
-
-button[aria-label="Toggle ingredients sidebar"]:hover {
-  transform: scale(1.1);
-  box-shadow: 0 6px 16px rgba(76, 175, 80, 0.4) !important;
-}
-
-/* Search Input Container Hover */
-div[style*="backgroundColor: #f5f5f5"][style*="borderRadius: '4px'"]:hover,
-div[style*="backgroundColor: '#f5f5f5'"][style*="borderRadius: '4px'"]:hover {
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.1);
-}
-
-/* Active State Animations */
-button:active,
-a:active {
-  transform: scale(0.98);
-}
-
-/* Disabled Button */
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-  transform: none !important;
-}
-
-button:disabled:hover {
-  transform: none !important;
-  box-shadow: none !important;
-}
-
-/* Smooth Transitions for All Interactive Elements */
-[style*="transition"],
-[style*="Transition"] {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-}
-
-/* Enhanced Box Shadow on Hover for Cards */
-div[style*="backgroundColor: #ffffff"]:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12) !important;
-}
-
-/* Link Button Styles */
-a[style*="padding: '12px 32px'"]:hover,
-a[style*="padding: 12px 32px"]:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+.glass-input {
+  @apply w-full px-4 py-3 rounded-xl border border-white/20 bg-white/5 backdrop-blur-sm text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:bg-white/10 transition-all;
 }
 
-/* Filter Modal Animations */
-div[style*="position: absolute"][style*="top: '100%'"] {
-  animation: slideInUp 0.3s ease;
+::-webkit-scrollbar-track {
+  background: transparent;
 }
 
-/* Banner Close Button */
-div[style*="backgroundColor: #f0f0f0"] button:hover {
-  background-color: #e0e0e0 !important;
-  border-radius: 50%;
-  transform: rotate(90deg);
+::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
 }
 
-/* Smooth Color Transitions */
-* {
-  transition-property: background-color, color, border-color, box-shadow, transform, opacity;
-  transition-duration: 0.3s;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
